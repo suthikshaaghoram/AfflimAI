@@ -2,7 +2,7 @@
 
 **AffirmAI** is an AI-powered personalized manifestation generator that blends ancient astrological wisdom with modern psychology. It generates customized manifestation passages and converts them into soothing audio using Tamil-accented English voices, creating a deeply personal and immersive experience.
 
-![AffirmAI UI](https://via.placeholder.com/800x400?text=AffirmAI+Preview)
+
 
 ---
 
