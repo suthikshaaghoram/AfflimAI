@@ -157,9 +157,49 @@ graph TD
 
 ## 👨‍💻 Development
 
-### API Endpoints
-- `POST /api/v1/generate-manifestation`: Generates text using LLM.
-- `POST /api/v1/generate-audio`: Generates audio file (returns MP3 blob).
+### API Reference
+
+#### 1. Generate Manifestation
+Generates a personalized AI manifestation passage based on user inputs.
+
+- **Endpoint**: `POST /api/v1/generate-manifestation`
+- **Content-Type**: `application/json`
+- **Request Body Example**:
+  ```json
+  {
+    "preferred_name": "Jordan",
+    "birth_date": "1994-06-15",
+    "nakshatra": "Mrigashirsha",
+    "birth_time": "14:30",
+    "birth_place": "Chennai",
+    "lagna": "Leo",
+    "strengths": "Creativity, Adaptability",
+    "areas_of_improvement": "Procrastination",
+    "greatest_achievement": "Community Art Program",
+    "recent_achievement": "Half Marathon",
+    "next_year_goals": "UX Design Job",
+    "life_goals": "Creative Studio",
+    "legacy": "Accessibility in Art",
+    "manifestation_focus": "Confidence"
+  }
+  ```
+- **Response**: JSON containing the generated `manifestation_text`.
+
+#### 2. Generate Audio (TTS)
+Converts the generated text into speech using high-quality neural voices.
+
+- **Endpoint**: `POST /api/v1/generate-audio`
+- **Content-Type**: `application/json`
+- **Request Body Example**:
+  ```json
+  {
+    "text": "Jordan, you stand in a moment of deep clarity...",
+    "gender": "female",
+    "username": "Jordan"
+  }
+  ```
+  - `gender`: `"male"` (uses `ta-SG-AnbuNeural`) or `"female"` (uses `ta-SG-VenbaNeural`).
+- **Response**: Binary MP3 file (audio/mpeg).
 
 ### Contributing
 1. Fork the repository.

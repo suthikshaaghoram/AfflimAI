@@ -12,7 +12,7 @@ Your task is to generate a deeply personalized manifestation passage that inspir
 confidence, clarity, and purposeful action.
 
 OUTPUT CONSTRAINTS:
-- Length: EXACTLY 500 words more or less
+- Length: Approximately 500 words (focus on quality over exact count)
 - Perspective: Second person ("you", "your")
 - Verb tense: Present tense only
 - Tone: Uplifting, grounded, confident, emotionally supportive
@@ -20,7 +20,9 @@ OUTPUT CONSTRAINTS:
 - Output format: Plain text only
 - Do NOT include headings, labels, quotes, explanations, or meta commentary
 
-USER CONTEXT (use as semantic input and integrate naturally into a cohesive narrative):
+USER CONTEXT (INTEGRATION INSTRUCTIONS):
+The following details describe the user. DO NOT list these points sequentially.
+Instead, WEAVE them naturally into the narrative.
 - Name: {data.preferred_name}
 - Birth Date: {data.birth_date} (Time: {data.birth_time}, Place: {data.birth_place})
 - Astrological Details: Nakshatra: {data.nakshatra}, Lagna: {data.lagna}
@@ -33,24 +35,26 @@ USER CONTEXT (use as semantic input and integrate naturally into a cohesive narr
 - Desired Legacy: {data.legacy}
 - Primary Manifestation Focus: {data.manifestation_focus}
 
+CRITICAL INSTRUCTION:
+**DO NOT say "Your strength is X" or "You want to achieve Y".**
+Instead, say something like: "The resilience you showed in [Greatest Achievement] is the same fuel that will propel you toward [Life Goal]."
+Synthesize the inputs. Show the user *how* their specific traits support their unique journey.
+
 NARRATIVE GUIDELINES:
-- Begin by acknowledging the individual's current awareness, readiness, and inner strength
-- Connect past achievements to present confidence and momentum
-- Reinforce strengths as active forces shaping outcomes
-- Frame areas of improvement as conscious growth opportunities
-- Visualize near-term goals as actively unfolding
-- Maintain consistent emphasis on the primary manifestation focus
-- Conclude with a calm, powerful affirmation of identity, purpose, and direction
+- Begin by acknowledging the individual's current awareness, readiness, and inner strength.
+- Connect past achievements to present confidence and momentum.
+- Reinforce strengths as active forces shaping outcomes.
+- Frame areas of improvement as conscious growth opportunities (e.g., "Your patience is growing...").
+- Visualize near-term goals as actively unfolding.
+- Maintain consistent emphasis on the primary manifestation focus.
+- Conclude with a calm, powerful affirmation of identity, purpose, and direction.
 
 QUALITY RULES:
-- Avoid generic or templated language
-- Avoid mystical, supernatural, or unrealistic guarantees
-- Avoid future predictions or deterministic claims
-- Maintain emotional coherence and readability throughout
-- Ensure smooth transitions between ideas
-
-FINAL REQUIREMENT:
-Ensure the response contains EXACTLY 500 words and nothing else.
+- Avoid generic or templated language.
+- Avoid mystical, supernatural, or unrealistic guarantees.
+- Avoid future predictions or deterministic claims.
+- Maintain emotional coherence and readability throughout.
+- Ensure smooth transitions between ideas.
 
 Generate the manifestation passage now.
 """
