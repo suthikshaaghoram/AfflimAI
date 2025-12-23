@@ -18,8 +18,11 @@ export interface ManifestationRequest {
 }
 
 export interface ManifestationResponse {
-  manifestation: string;
   status: string;
+  message: string;
+  data: {
+    manifestation_text: string;
+  };
 }
 
 export interface AudioRequest {

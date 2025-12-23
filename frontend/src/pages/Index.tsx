@@ -19,7 +19,7 @@ export default function Index() {
 
     try {
       const response = await generateManifestation(data);
-      setManifestation(response.manifestation);
+      setManifestation(response.data.manifestation_text);
       setAppState("result");
       toast.success("✨ Your manifestation has been created!");
     } catch (error) {
@@ -59,9 +59,9 @@ export default function Index() {
                 Beautiful Dreams
               </span>
             </h1>
-            
+
             <p className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto text-balance leading-relaxed">
-              Create personalized affirmations that speak to your soul, 
+              Create personalized affirmations that speak to your soul,
               powered by AI and infused with <span className="text-sunrise-orange font-medium">positive energy</span> ✨
             </p>
 
@@ -72,7 +72,7 @@ export default function Index() {
                 { icon: Heart, text: "Personal Touch" },
                 { icon: Sparkles, text: "Tamil Audio" },
               ].map(({ icon: Icon, text }) => (
-                <div 
+                <div
                   key={text}
                   className="flex items-center gap-2 px-4 py-2 rounded-xl bg-card/60 border border-border/30 shadow-soft"
                 >
