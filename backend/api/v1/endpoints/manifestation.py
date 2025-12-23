@@ -27,7 +27,24 @@ async def generate_manifestation(request: ManifestationRequest):
         # 2. Generate text via Hugging Face API
         generated_text = generate_text(prompt)
         
-        # 3. Return structured response
+        import os
+        from datetime import datetime
+        
+        # 3. Save text to file
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        safe_username = "".join(c for c in request.preferred_name if c.isalnum() or c in (' ', '_', '-')).strip().replace(' ', '_')
+        filename = f"{safe_username}_{timestamp}.txt"
+        
+        output_dir = "outputs"
+        os.makedirs(output_dir, exist_ok=True)
+        file_path = os.path.join(output_dir, filename)
+        
+        with open(file_path, "w", encoding="utf-8") as f:
+            f.write(generated_text)
+            
+        logger.info(f"Saved manifestation to {file_path}")
+        
+        # 4. Return structured response
         return ManifestationResponse(
             status="success",
             message="Manifestation generated successfully",

@@ -38,7 +38,7 @@ def generate_text(prompt: str) -> str:
 
         result = response.json()
         
-        # Parse OpenAI-style response
+        if 'choices' in result and len(result['choices']) > 0:
             content = result['choices'][0]['message']['content']
             # Remove newlines and ensure single spacing
             return content.replace('\n', ' ').strip()

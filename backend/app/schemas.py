@@ -20,6 +20,11 @@ class ManifestationRequest(BaseModel):
 class ManifestationData(BaseModel):
     manifestation_text: str
 
+class AudioRequest(BaseModel):
+    text: str = Field(..., description="The text to convert to audio")
+    gender: str = Field(..., description="Gender of the voice (male/female)")
+    username: Optional[str] = Field(None, description="Username for file naming")
+
 class ManifestationResponse(BaseModel):
     status: str
     message: str
