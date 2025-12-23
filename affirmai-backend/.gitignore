@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.env
+venv/
+.DS_Store
+test_hf_connection.py
+test_request.json
