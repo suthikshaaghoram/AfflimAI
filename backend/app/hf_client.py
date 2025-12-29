@@ -23,7 +23,7 @@ def generate_text(prompt: str) -> str:
             {"role": "system", "content": "You are a helpful assistant."},
             {"role": "user", "content": prompt}
         ],
-        "max_tokens": 600,
+        "max_tokens": 1200,  # Increased to allow full 750-word passages (~1000 tokens)
         "temperature": 0.7,
         "top_p": 0.9,
         "stream": False

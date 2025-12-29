@@ -14,6 +14,8 @@ export function AudioPlayer({ audioUrl, className }: AudioPlayerProps) {
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
+  const [playbackRate, setPlaybackRate] = useState(1);
+  const [showSpeedMenu, setShowSpeedMenu] = useState(false);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -78,6 +80,14 @@ export function AudioPlayer({ audioUrl, className }: AudioPlayerProps) {
     return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   };
 
+  const handleSpeedChange = (speed: number) => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.playbackRate = speed;
+    setPlaybackRate(speed);
+    setShowSpeedMenu(false);
+  };
+
   const handleDownload = () => {
     const link = document.createElement("a");
     link.href = audioUrl;
@@ -90,7 +100,7 @@ export function AudioPlayer({ audioUrl, className }: AudioPlayerProps) {
   return (
     <div className={cn("relative mt-6 gradient-audio rounded-2xl p-6 text-primary-foreground overflow-hidden", className)}>
       <audio ref={audioRef} src={audioUrl} preload="metadata" />
-      
+
       {/* Decorative background */}
       <div className="absolute inset-0 opacity-20">
         <div className="absolute top-2 right-4">
@@ -100,7 +110,7 @@ export function AudioPlayer({ audioUrl, className }: AudioPlayerProps) {
           <Music className="w-6 h-6 animate-float" />
         </div>
       </div>
-      
+
       <div className="relative">
         <div className="flex items-center gap-3 mb-5">
           <Volume2 className="w-5 h-5 opacity-80" />
@@ -114,7 +124,7 @@ export function AudioPlayer({ audioUrl, className }: AudioPlayerProps) {
         >
           <div
             className="absolute h-full rounded-full transition-all duration-100"
-            style={{ 
+            style={{
               width: `${progress}%`,
               background: "linear-gradient(90deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.7) 100%)"
             }}
@@ -147,7 +157,36 @@ export function AudioPlayer({ audioUrl, className }: AudioPlayerProps) {
               <Play className="w-7 h-7 ml-1" />
             )}
           </Button>
-          
+
+          {/* Speed Control */}
+          <div className="relative">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowSpeedMenu(!showSpeedMenu)}
+              className="text-primary-foreground hover:bg-primary-foreground/20 rounded-xl h-10 px-3 min-w-[3rem]"
+            >
+              <span className="font-medium text-sm">{playbackRate}x</span>
+            </Button>
+
+            {showSpeedMenu && (
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-popover/95 backdrop-blur-sm border border-border/50 rounded-xl shadow-lg p-1 flex flex-col gap-1 min-w-[4rem] z-50">
+                {[0.5, 0.75, 1, 1.25, 1.5, 2].map((speed) => (
+                  <button
+                    key={speed}
+                    onClick={() => handleSpeedChange(speed)}
+                    className={cn(
+                      "px-3 py-1.5 text-sm rounded-lg hover:bg-accent/50 transition-colors text-left",
+                      playbackRate === speed ? "bg-accent text-accent-foreground font-medium" : "text-muted-foreground"
+                    )}
+                  >
+                    {speed}x
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
           <Button
             variant="ghost"
             size="lg"

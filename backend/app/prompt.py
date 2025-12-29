@@ -12,7 +12,7 @@ Your task is to generate a deeply personalized manifestation passage that inspir
 confidence, clarity, and purposeful action.
 
 OUTPUT CONSTRAINTS:
-- Length: Approximately 500 words (focus on quality over exact count)
+- Length: Approximately 750 words (aiming for ~4 minutes of spoken audio)
 - Perspective: Second person ("you", "your")
 - Verb tense: Present tense only
 - Tone: Uplifting, grounded, confident, emotionally supportive

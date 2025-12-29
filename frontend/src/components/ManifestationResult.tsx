@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { AudioPlayer } from "@/components/AudioPlayer";
 import { Loader } from "@/components/Loader";
@@ -18,6 +18,15 @@ export function ManifestationResult({ manifestation, onStartNew, className }: Ma
   const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
   const [selectedVoice, setSelectedVoice] = useState<"male" | "female" | null>(null);
   const [copied, setCopied] = useState(false);
+
+  // Cleanup audio URL on unmount or change
+  useEffect(() => {
+    return () => {
+      if (audioUrl) {
+        URL.revokeObjectURL(audioUrl);
+      }
+    };
+  }, [audioUrl]);
 
   const handleGenerateAudio = async (gender: "male" | "female") => {
     setSelectedVoice(gender);

@@ -2,8 +2,9 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FormSection } from "@/components/FormSection";
 import { FormField } from "@/components/FormField";
-import { ManifestationRequest } from "@/lib/api";
-import { User, Star, Heart, Target, Sparkles, Wand2 } from "lucide-react";
+import { ManifestationRequest, getLastSubmission } from "@/lib/api";
+import { User, Star, Heart, Target, Sparkles, Wand2, History } from "lucide-react";
+import { toast } from "sonner";
 
 interface ManifestationFormProps {
   onSubmit: (data: ManifestationRequest) => void;
@@ -39,6 +40,16 @@ export function ManifestationForm({ onSubmit, isLoading }: ManifestationFormProp
     onSubmit(formData);
   };
 
+  const handleAutoFill = async () => {
+    try {
+      const lastData = await getLastSubmission();
+      setFormData(lastData);
+      toast.success("✨ Form filled with your last data!");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to load previous data");
+    }
+  };
+
   const isFormValid = formData.preferred_name && formData.manifestation_focus;
 
   return (
@@ -50,6 +61,18 @@ export function ManifestationForm({ onSubmit, isLoading }: ManifestationFormProp
         icon={<User className="w-6 h-6" />}
         accentColor="orange"
       >
+        <div className="flex justify-end mb-4">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={handleAutoFill}
+            className="text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors gap-2"
+          >
+            <History className="w-4 h-4" />
+            Auto-fill last data
+          </Button>
+        </div>
         <div className="grid sm:grid-cols-2 gap-5">
           <FormField
             label="Preferred Name"

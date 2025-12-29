@@ -2,25 +2,30 @@ import { useState } from "react";
 import { Header } from "@/components/Header";
 import { FloatingElements } from "@/components/FloatingElements";
 import { ManifestationForm } from "@/components/ManifestationForm";
+import { ManifestationReview } from "@/components/ManifestationReview";
 import { ManifestationResult } from "@/components/ManifestationResult";
 import { Loader } from "@/components/Loader";
 import { generateManifestation, ManifestationRequest } from "@/lib/api";
 import { toast } from "sonner";
 import { Sparkles, Star, Heart } from "lucide-react";
 
-type AppState = "form" | "loading" | "result";
+type AppState = "form" | "loading" | "review" | "result";
+
 
 export default function Index() {
   const [appState, setAppState] = useState<AppState>("form");
   const [manifestation, setManifestation] = useState<string>("");
+  const [editableManifestation, setEditableManifestation] = useState<string>("");
 
   const handleSubmit = async (data: ManifestationRequest) => {
     setAppState("loading");
 
     try {
       const response = await generateManifestation(data);
-      setManifestation(response.data.manifestation_text);
-      setAppState("result");
+      const generatedText = response.data.manifestation_text;
+      setManifestation(generatedText);
+      setEditableManifestation(generatedText);
+      setAppState("review");
       toast.success("✨ Your manifestation has been created!");
     } catch (error) {
       console.error("Error generating manifestation:", error);
@@ -31,8 +36,21 @@ export default function Index() {
     }
   };
 
+  const handleConfirmManifestation = (editedText: string) => {
+    setEditableManifestation(editedText);
+    setAppState("result");
+    toast.success("✨ Manifestation finalized!");
+  };
+
+  const handleRegenerate = () => {
+    setManifestation("");
+    setEditableManifestation("");
+    setAppState("form");
+  };
+
   const handleStartNew = () => {
     setManifestation("");
+    setEditableManifestation("");
     setAppState("form");
   };
 
@@ -103,9 +121,17 @@ export default function Index() {
               <Loader message="Crafting your personalized manifestation..." />
             )}
 
+            {appState === "review" && (
+              <ManifestationReview
+                manifestation={manifestation}
+                onConfirm={handleConfirmManifestation}
+                onRegenerate={handleRegenerate}
+              />
+            )}
+
             {appState === "result" && (
               <ManifestationResult
-                manifestation={manifestation}
+                manifestation={editableManifestation}
                 onStartNew={handleStartNew}
               />
             )}

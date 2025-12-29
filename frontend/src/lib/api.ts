@@ -53,6 +53,25 @@ export async function generateManifestation(data: ManifestationRequest): Promise
   return response.json();
 }
 
+export async function getLastSubmission(): Promise<ManifestationRequest> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/last-submission`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    if (response.status === 404) {
+      throw new Error('No previous submission found');
+    }
+    const error = await response.json().catch(() => ({ detail: 'Failed to fetch last submission' }));
+    throw new Error(error.detail || 'Failed to fetch last submission');
+  }
+
+  return response.json();
+}
+
 export async function generateAudio(data: AudioRequest): Promise<AudioResponse> {
   const response = await fetch(`${API_BASE_URL}/api/v1/generate-audio`, {
     method: 'POST',
@@ -67,5 +86,12 @@ export async function generateAudio(data: AudioRequest): Promise<AudioResponse> 
     throw new Error(error.detail || 'Failed to generate audio');
   }
 
-  return response.json();
+  // Backend returns audio file, create a Blob URL
+  const blob = await response.blob();
+  const audio_url = URL.createObjectURL(blob);
+
+  return {
+    audio_url,
+    status: 'success'
+  };
 }

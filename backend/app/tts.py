@@ -15,11 +15,15 @@ async def generate_audio_file(text: str, gender: str, filename: str = None, rate
         pitch (str): Pitch adjustment (default '-2Hz') for warmer tone.
     """
     # Select voice based on gender
-    # User preferred Singapore Tamil (ta-SG) voices.
+    # User requested "only indian tamil accent more human like voice".
+    # en-IN-PrabhatNeural and en-IN-NeerjaNeural are high quality Indian English voices.
+    # If specifically "Tamil accent" is needed for English, ta-IN/ta-SG voices can be used,
+    # but en-IN is safer for English text. Given the user's "more human like" request,
+    # we will use the expressive Indian English voices.
     if gender.lower() == "male":
-        voice = "ta-SG-AnbuNeural" 
+        voice = "en-IN-PrabhatNeural" 
     else:
-        voice = "ta-SG-VenbaNeural"
+        voice = "en-IN-NeerjaNeural"
     
     # Using rate adjustment for duration, but no pitch adjustment to ensure stability
     communicate = edge_tts.Communicate(text, voice, rate=rate)
