@@ -20,14 +20,14 @@ def cleanup_file(path: str):
     "/generate-audio",
     response_class=FileResponse,
     summary="Generate audio from text (TTS)",
-    description="Converts text to audio using Indian Tamil accent (English). Supports Male/Female."
+    description="Converts text to audio. Supports Male/Female voices in English, Tamil, and Hindi."
 )
 async def generate_audio_endpoint(request: AudioRequest, background_tasks: BackgroundTasks):
     """
-    Endpoint to generate audio from text.
+    Endpoint to generate audio from text with multi-language support.
     """
     try:
-        logger.info(f"Generating audio for text (length: {len(request.text)}), gender: {request.gender}")
+        logger.info(f"Generating audio: language={request.language}, gender={request.gender}, text_length={len(request.text)}")
         
         from datetime import datetime
         
@@ -36,10 +36,15 @@ async def generate_audio_endpoint(request: AudioRequest, background_tasks: Backg
         if request.username:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             safe_username = "".join(c for c in request.username if c.isalnum() or c in (' ', '_', '-')).strip().replace(' ', '_')
-            custom_filename = f"{safe_username}_{timestamp}"
+            custom_filename = f"{safe_username}_{request.language}_{timestamp}"
             
-        # Use updated defaults: rate="-10%" for better naturalness
-        file_path = await generate_audio_file(request.text, request.gender, filename=custom_filename)
+        # Generate audio with language support
+        file_path = await generate_audio_file(
+            text=request.text,
+            gender=request.gender,
+            language=request.language,  # Pass language parameter
+            filename=custom_filename
+        )
         
         # Only schedule cleanup if it's a temporary file (no username provided)
         if not custom_filename:

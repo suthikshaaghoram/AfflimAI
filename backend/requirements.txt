@@ -6,3 +6,6 @@ pydantic-settings
 requests
 edge-tts
 aiofiles
+chromadb
+sentence-transformers
+nltk

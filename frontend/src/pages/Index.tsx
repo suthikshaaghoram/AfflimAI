@@ -16,9 +16,11 @@ export default function Index() {
   const [appState, setAppState] = useState<AppState>("form");
   const [manifestation, setManifestation] = useState<string>("");
   const [editableManifestation, setEditableManifestation] = useState<string>("");
+  const [username, setUsername] = useState<string>("");
 
   const handleSubmit = async (data: ManifestationRequest) => {
     setAppState("loading");
+    setUsername(data.preferred_name); // Save username for translation
 
     try {
       const response = await generateManifestation(data);
@@ -82,23 +84,6 @@ export default function Index() {
               Create personalized affirmations that speak to your soul,
               powered by AI and infused with <span className="text-sunrise-orange font-medium">positive energy</span> ✨
             </p>
-
-            {/* Feature highlights */}
-            <div className="flex flex-wrap justify-center gap-4 mt-8">
-              {[
-                { icon: Star, text: "Vedic Astrology" },
-                { icon: Heart, text: "Personal Touch" },
-                { icon: Sparkles, text: "Tamil Audio" },
-              ].map(({ icon: Icon, text }) => (
-                <div
-                  key={text}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-card/60 border border-border/30 shadow-soft"
-                >
-                  <Icon className="w-4 h-4 text-sunrise-gold" />
-                  <span className="text-sm font-medium text-foreground">{text}</span>
-                </div>
-              ))}
-            </div>
           </div>
         )}
 
@@ -132,6 +117,7 @@ export default function Index() {
             {appState === "result" && (
               <ManifestationResult
                 manifestation={editableManifestation}
+                username={username}
                 onStartNew={handleStartNew}
               />
             )}

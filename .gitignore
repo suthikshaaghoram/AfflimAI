@@ -25,13 +25,39 @@ logs
 # Backend (Python/FastAPI)
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
 venv/
+venv_clean/
+env/
 .env
+.venv
 
-# Generated Content
+# Generated Content & Data
 backend/outputs/*
+!backend/outputs/.gitkeep
 backend/temp_audio/*
+!backend/temp_audio/.gitkeep
+backend/chroma_db/
+cache/
+*.db
+*.sqlite3
 
-# Local Development/Test Files
+# Test Files
+test_*.py
+test_*.mp3
+test_*.txt
+*_test.py
 backend/test_hf_connection.py
 backend/test_request.json
+
+# IDE & Editor
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*~
+
+# OS Files
+Thumbs.db
+.DS_Store

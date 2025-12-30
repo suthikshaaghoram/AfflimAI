@@ -28,6 +28,7 @@ export interface ManifestationResponse {
 export interface AudioRequest {
   text: string;
   gender: 'male' | 'female';
+  language?: string; // Language code: en, ta, hi
   username?: string;
 }
 
@@ -95,3 +96,62 @@ export async function generateAudio(data: AudioRequest): Promise<AudioResponse> 
     status: 'success'
   };
 }
+
+// Translation API
+export interface TranslationRequest {
+  text: string;
+  target_language: string;
+  username?: string;
+}
+
+export interface TranslationResponse {
+  status: string;
+  language: string;
+  language_code: string;
+  translated_text: string;
+}
+
+export interface SupportedLanguage {
+  name: string;
+  native_name: string;
+  instruction: string;
+}
+
+export interface SupportedLanguagesResponse {
+  status: string;
+  languages: Record<string, SupportedLanguage>;
+}
+
+export async function getSupportedLanguages(): Promise<SupportedLanguagesResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/supported-languages`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: 'Failed to fetch supported languages' }));
+    throw new Error(error.detail || 'Failed to fetch supported languages');
+  }
+
+  return response.json();
+}
+
+export async function translateManifestation(data: TranslationRequest): Promise<TranslationResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/translate-manifestation`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: 'Failed to translate manifestation' }));
+    throw new Error(error.detail || 'Failed to translate manifestation');
+  }
+
+  return response.json();
+}
+

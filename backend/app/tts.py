@@ -2,30 +2,51 @@ import edge_tts
 import uuid
 import os
 
-async def generate_audio_file(text: str, gender: str, filename: str = None, rate: str = "-10%") -> str:
+async def generate_audio_file(
+    text: str, 
+    gender: str, 
+    language: str = "en",
+    filename: str = None, 
+    rate: str = "-10%"
+) -> str:
     """
     Generates an audio file from text using edge-tts.
-    Returns the path to the generated file.
+    Supports multiple languages: English, Tamil, Hindi.
     
     Args:
         text (str): The text to speak.
         gender (str): 'male' or 'female'.
+        language (str): Language code - 'en', 'ta' (Tamil), 'hi' (Hindi)
         filename (str, optional): Custom filename. If provided, saves to 'outputs/'.
         rate (str): Speaking rate adjustment (default '-10%').
-        pitch (str): Pitch adjustment (default '-2Hz') for warmer tone.
-    """
-    # Select voice based on gender
-    # User requested "only indian tamil accent more human like voice".
-    # en-IN-PrabhatNeural and en-IN-NeerjaNeural are high quality Indian English voices.
-    # If specifically "Tamil accent" is needed for English, ta-IN/ta-SG voices can be used,
-    # but en-IN is safer for English text. Given the user's "more human like" request,
-    # we will use the expressive Indian English voices.
-    if gender.lower() == "male":
-        voice = "en-IN-PrabhatNeural" 
-    else:
-        voice = "en-IN-NeerjaNeural"
     
-    # Using rate adjustment for duration, but no pitch adjustment to ensure stability
+    Returns:
+        str: Path to the generated audio file
+    """
+    # Voice selection based on language and gender
+    voice_map = {
+        # English (Indian accent)
+        "en": {
+            "male": "en-IN-PrabhatNeural",
+            "female": "en-IN-NeerjaNeural"
+        },
+        # Tamil
+        "ta": {
+            "male": "ta-IN-ValluvarNeural",
+            "female": "ta-IN-PallaviNeural"
+        },
+        # Hindi
+        "hi": {
+            "male": "hi-IN-MadhurNeural",
+            "female": "hi-IN-SwaraNeural"
+        }
+    }
+    
+    # Get voice for selected language and gender
+    language_voices = voice_map.get(language, voice_map["en"])
+    voice = language_voices.get(gender.lower(), language_voices["female"])
+    
+    # Using rate adjustment for duration
     communicate = edge_tts.Communicate(text, voice, rate=rate)
     
     if filename:

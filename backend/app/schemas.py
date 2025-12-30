@@ -23,9 +23,22 @@ class ManifestationData(BaseModel):
 class AudioRequest(BaseModel):
     text: str = Field(..., description="The text to convert to audio")
     gender: str = Field(..., description="Gender of the voice (male/female)")
+    language: str = Field(default="en", description="Language code: en, ta (Tamil), hi (Hindi)")
     username: Optional[str] = Field(None, description="Username for file naming")
 
 class ManifestationResponse(BaseModel):
     status: str
     message: str
     data: ManifestationData
+
+class TranslationRequest(BaseModel):
+    text: str = Field(..., description="English manifestation text to translate")
+    target_language: str = Field(..., description="Target language code (ta=Tamil, hi=Hindi)")
+    username: Optional[str] = Field(None, description="Username for file naming and vector store")
+
+class TranslationResponse(BaseModel):
+    status: str
+    language: str = Field(..., description="Full language name (e.g., 'Tamil')")
+    language_code: str = Field(..., description="Language code (e.g., 'ta')")
+    translated_text: str = Field(..., description="The translated manifestation text")
+
