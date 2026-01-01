@@ -1,10 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { AudioPlayer } from "@/components/AudioPlayer";
-import { Loader } from "@/components/Loader";
-import { generateAudio, AudioRequest, translateManifestation, getSupportedLanguages, SupportedLanguage } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import { Copy, Download, Volume2, RefreshCw, Check, Sparkles, Sun, Heart, Star, Globe, Languages } from "lucide-react";
+import { Copy, Download, RefreshCw, Check, Sparkles, Sun, Heart, Star, Languages, Volume2, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 
 interface ManifestationResultProps {
@@ -15,82 +13,8 @@ interface ManifestationResultProps {
 }
 
 export function ManifestationResult({ manifestation, onStartNew, username, className }: ManifestationResultProps) {
-  const [audioUrl, setAudioUrl] = useState<string | null>(null);
-  const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
-  const [selectedVoice, setSelectedVoice] = useState<"male" | "female" | null>(null);
+  const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
-
-  // Translation state
-  const [supportedLanguages, setSupportedLanguages] = useState<Record<string, SupportedLanguage>>({});
-  const [selectedLanguage, setSelectedLanguage] = useState<string>("");
-  const [translatedText, setTranslatedText] = useState<string>("");
-  const [isTranslating, setIsTranslating] = useState(false);
-  const [showTranslation, setShowTranslation] = useState(false);
-
-  // Audio language state
-  const [selectedAudioLanguage, setSelectedAudioLanguage] = useState<string>("en");
-
-  // Track translations by language code
-  const [translations, setTranslations] = useState<Record<string, string>>({});
-
-  // Fetch supported languages on mount
-  useEffect(() => {
-    const fetchLanguages = async () => {
-      try {
-        const response = await getSupportedLanguages();
-        setSupportedLanguages(response.languages);
-      } catch (error) {
-        console.error("Error fetching supported languages:", error);
-      }
-    };
-    fetchLanguages();
-  }, []);
-
-  // Cleanup audio URL on unmount or change
-  useEffect(() => {
-    return () => {
-      if (audioUrl) {
-        URL.revokeObjectURL(audioUrl);
-      }
-    };
-  }, [audioUrl]);
-
-  const handleGenerateAudio = async (gender: "male" | "female") => {
-    setSelectedVoice(gender);
-    setIsGeneratingAudio(true);
-
-    try {
-      // Determine which text to use based on selected audio language
-      let textToSpeak = manifestation; // Default: English
-
-      if (selectedAudioLanguage === "ta" || selectedAudioLanguage === "hi") {
-        // Use translated text if available
-        if (!translatedText) {
-          toast.error("Please translate first before generating audio in other languages");
-          setIsGeneratingAudio(false);
-          setSelectedVoice(null);
-          return;
-        }
-        textToSpeak = translatedText;
-      }
-
-      const request: AudioRequest = {
-        text: textToSpeak,
-        gender,
-        language: selectedAudioLanguage, // Pass selected language
-      };
-
-      const response = await generateAudio(request);
-      setAudioUrl(response.audio_url);
-      toast.success("✨ Audio generated successfully!");
-    } catch (error) {
-      console.error("Error generating audio:", error);
-      toast.error(error instanceof Error ? error.message : "Failed to generate audio");
-      setSelectedVoice(null);
-    } finally {
-      setIsGeneratingAudio(false);
-    }
-  };
 
   const handleCopyText = async () => {
     try {
@@ -116,36 +40,24 @@ export function ManifestationResult({ manifestation, onStartNew, username, class
     toast.success("✨ Manifestation downloaded!");
   };
 
-  const handleTranslate = async (languageCode: string) => {
-    if (!languageCode) return;
+  const handleGoToTranslation = () => {
+    navigate("/translate", {
+      state: {
+        manifestation,
+        username
+      }
+    });
+  };
 
-    setSelectedLanguage(languageCode);
-    setIsTranslating(true);
-    setShowTranslation(true);
-
-    try {
-      const response = await translateManifestation({
-        text: manifestation,
-        target_language: languageCode,
-        username: username || "anonymous",
-      });
-
-      setTranslatedText(response.translated_text);
-
-      // Store translation by language code
-      setTranslations(prev => ({
-        ...prev,
-        [languageCode]: response.translated_text  // Use bracket notation for dynamic key
-      }));
-
-      toast.success(`✨ Translated to ${response.language}!`);
-    } catch (error) {
-      console.error("Error translating:", error);
-      toast.error(error instanceof Error ? error.message : "Failed to translate");
-      setShowTranslation(false);
-    } finally {
-      setIsTranslating(false);
-    }
+  const handleGoToAudio = () => {
+    navigate("/audio", {
+      state: {
+        manifestation,
+        username,
+        translations: { en: manifestation },
+        translationStatus: { en: "ready" }
+      }
+    });
   };
 
   return (
@@ -213,180 +125,58 @@ export function ManifestationResult({ manifestation, onStartNew, username, class
         </div>
       </div>
 
-      {/* Translation Section */}
-      {Object.keys(supportedLanguages).length > 0 && (
-        <div className="relative">
-          <div className="absolute inset-0 bg-gradient-to-br from-lotus-pink/10 via-transparent to-sunrise-orange/10 rounded-3xl" />
-          <div className="relative gradient-card rounded-3xl shadow-card p-8 md:p-10 border border-lotus-pink/20">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-lotus-pink to-sunrise-pink flex items-center justify-center">
-                <Languages className="w-5 h-5 text-primary-foreground" />
+      {/* Navigation Cards */}
+      <div className="grid md:grid-cols-2 gap-6">
+        {/* Translation Card */}
+        <div className="relative group cursor-pointer" onClick={handleGoToTranslation}>
+          <div className="absolute inset-0 bg-gradient-to-br from-lotus-pink/20 via-transparent to-sunrise-orange/20 rounded-3xl transition-all duration-300 group-hover:scale-105" />
+          <div className="relative gradient-card rounded-3xl shadow-card p-8 border border-lotus-pink/20 transition-all duration-300 group-hover:border-lotus-pink/40 group-hover:shadow-glow">
+            <div className="flex items-start justify-between mb-4">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-lotus-pink to-sunrise-pink flex items-center justify-center">
+                <Languages className="w-6 h-6 text-primary-foreground" />
               </div>
-              <div>
-                <h3 className="font-display text-xl font-semibold text-foreground">
-                  Translate to Your Language
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  Experience your manifestation in Tamil or Hindi
-                </p>
-              </div>
+              <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
             </div>
-
-            {isTranslating ? (
-              <Loader message="Translating your manifestation..." className="py-8" />
-            ) : (
-              <div className="space-y-5 mt-6">
-                <p className="text-sm text-muted-foreground flex items-center gap-2">
-                  <Globe className="w-4 h-4 text-sunrise-orange" />
-                  Choose your preferred language:
-                </p>
-                <div className="flex flex-wrap gap-4">
-                  {Object.entries(supportedLanguages).map(([code, info]) => (
-                    <Button
-                      key={code}
-                      variant={selectedLanguage === code ? "default" : "secondary"}
-                      size="lg"
-                      onClick={() => handleTranslate(code)}
-                      className={cn(
-                        "flex-1 h-14 rounded-xl transition-all duration-300 hover:scale-105",
-                        selectedLanguage === code
-                          ? "gradient-button shadow-button"
-                          : "bg-card hover:bg-lotus-pink/20 border border-lotus-pink/30"
-                      )}
-                    >
-                      <Languages className="w-5 h-5 mr-2" />
-                      {info.name} ({info.native_name})
-                    </Button>
-                  ))}
-                </div>
-
-                {/* Translated Text Display */}
-                {showTranslation && translatedText && (
-                  <div className="mt-6 p-6 bg-card/50 rounded-2xl border border-border/30 animate-fade-up">
-                    <div className="flex items-center gap-2 mb-4">
-                      <Globe className="w-5 h-5 text-sunrise-orange" />
-                      <h4 className="font-display text-lg font-semibold text-foreground">
-                        {supportedLanguages[selectedLanguage]?.name} Translation
-                      </h4>
-                    </div>
-                    <div className="prose prose-lg max-w-none">
-                      <p className="font-body text-foreground/90 leading-relaxed whitespace-pre-wrap text-balance text-lg">
-                        {translatedText}
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
+            <h3 className="font-display text-xl font-semibold text-foreground mb-2">
+              Translate to Your Language
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              Experience your manifestation in Tamil or Hindi
+            </p>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="mt-4 text-lotus-pink hover:text-lotus-pink/80 hover:bg-lotus-pink/10 p-0"
+            >
+              Get Started →
+            </Button>
           </div>
         </div>
-      )}
 
-      {/* Audio Section */}
-      <div className="relative">
-        <div className="absolute inset-0 bg-gradient-to-br from-sage/10 via-transparent to-sky-blue/10 rounded-3xl" />
-        <div className="relative gradient-card rounded-3xl shadow-card p-8 md:p-10 border border-sage/20">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-sage to-sage-deep flex items-center justify-center">
-              <Volume2 className="w-5 h-5 text-primary-foreground" />
-            </div>
-            <div>
-              <h3 className="font-display text-xl font-semibold text-foreground">
-                Listen to Your Manifestation
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                Choose language and voice for your audio
-              </p>
-            </div>
-          </div>
-
-          {/* Language Selection for Audio */}
-          <div className="space-y-4 mt-6">
-            <div className="flex items-center gap-2">
-              <Globe className="w-4 h-4 text-sunrise-orange" />
-              <p className="text-sm font-medium text-foreground">Select audio language:</p>
-            </div>
-            <div className="flex flex-wrap gap-3">
-              <Button
-                variant={selectedAudioLanguage === "en" ? "default" : "secondary"}
-                size="sm"
-                onClick={() => setSelectedAudioLanguage("en")}
-                className={cn(
-                  "rounded-xl transition-all duration-300",
-                  selectedAudioLanguage === "en"
-                    ? "gradient-button shadow-button"
-                    : "bg-card hover:bg-sage/20 border border-sage/30"
-                )}
-              >
-                English
-              </Button>
-              {Object.entries(supportedLanguages).map(([code, info]) => (
-                <Button
-                  key={code}
-                  variant={selectedAudioLanguage === code ? "default" : "secondary"}
-                  size="sm"
-                  onClick={() => {
-                    if (!translatedText && selectedLanguage !== code) {
-                      toast.info(`Please translate to ${info.name} first`);
-                      return;
-                    }
-                    setSelectedAudioLanguage(code);
-                  }}
-                  className={cn(
-                    "rounded-xl transition-all duration-300",
-                    selectedAudioLanguage === code
-                      ? "gradient-button shadow-button"
-                      : "bg-card hover:bg-lotus-pink/20 border border-lotus-pink/30"
-                  )}
-                >
-                  {info.name} ({info.native_name})
-                </Button>
-              ))}
-            </div>
-          </div>
-
-          {isGeneratingAudio ? (
-            <Loader message="Creating your audio..." className="py-8" />
-          ) : audioUrl ? (
-            <AudioPlayer audioUrl={audioUrl} />
-          ) : (
-            <div className="space-y-5 mt-6">
-              <p className="text-sm text-muted-foreground flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-sunrise-gold" />
-                Choose your preferred voice:
-              </p>
-              <div className="flex flex-wrap gap-4">
-                <Button
-                  variant={selectedVoice === "male" ? "default" : "secondary"}
-                  size="lg"
-                  onClick={() => handleGenerateAudio("male")}
-                  className={cn(
-                    "flex-1 h-14 rounded-xl transition-all duration-300 hover:scale-105",
-                    selectedVoice === "male"
-                      ? "gradient-audio shadow-button"
-                      : "bg-card hover:bg-sage/20 border border-sage/30"
-                  )}
-                >
-                  <Volume2 className="w-5 h-5 mr-2" />
-                  Male Voice
-                </Button>
-                <Button
-                  variant={selectedVoice === "female" ? "default" : "secondary"}
-                  size="lg"
-                  onClick={() => handleGenerateAudio("female")}
-                  className={cn(
-                    "flex-1 h-14 rounded-xl transition-all duration-300 hover:scale-105",
-                    selectedVoice === "female"
-                      ? "gradient-audio shadow-button"
-                      : "bg-card hover:bg-lotus-pink/20 border border-lotus-pink/30"
-                  )}
-                >
-                  <Volume2 className="w-5 h-5 mr-2" />
-                  Female Voice
-                </Button>
+        {/* Audio Card */}
+        <div className="relative group cursor-pointer" onClick={handleGoToAudio}>
+          <div className="absolute inset-0 bg-gradient-to-br from-sage/20 via-transparent to-sky-blue/20 rounded-3xl transition-all duration-300 group-hover:scale-105" />
+          <div className="relative gradient-card rounded-3xl shadow-card p-8 border border-sage/20 transition-all duration-300 group-hover:border-sage/40 group-hover:shadow-glow">
+            <div className="flex items-start justify-between mb-4">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-sage to-sage-deep flex items-center justify-center">
+                <Volume2 className="w-6 h-6 text-primary-foreground" />
               </div>
+              <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
             </div>
-          )}
+            <h3 className="font-display text-xl font-semibold text-foreground mb-2">
+              Listen to Your Manifestation
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              Generate audio in your preferred language and voice
+            </p>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="mt-4 text-sage-deep hover:text-sage-deep/80 hover:bg-sage/10 p-0"
+            >
+              Generate Audio →
+            </Button>
+          </div>
         </div>
       </div>
 
