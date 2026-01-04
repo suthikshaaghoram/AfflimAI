@@ -40,6 +40,17 @@ def generate_text(prompt: str) -> str:
         
         if 'choices' in result and len(result['choices']) > 0:
             content = result['choices'][0]['message']['content']
+            
+            # Extract content within <manifestation> tags if present
+            import re
+            match = re.search(r'<manifestation>(.*?)</manifestation>', content, re.DOTALL)
+            if match:
+                content = match.group(1).strip()
+            else:
+                # Fallback: remove any potential conversational filler if tags are missing
+                # This is a basic safety net
+                content = content.replace("Here is your manifestation:", "").replace("Here is the manifestation:", "").strip()
+            
             # Remove newlines and ensure single spacing
             return content.replace('\n', ' ').strip()
         else:

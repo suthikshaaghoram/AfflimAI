@@ -15,6 +15,7 @@ export interface ManifestationRequest {
   life_goals: string;
   legacy: string;
   manifestation_focus: string;
+  generation_mode?: "quick" | "deep";
 }
 
 export interface ManifestationResponse {
@@ -22,6 +23,8 @@ export interface ManifestationResponse {
   message: string;
   data: {
     manifestation_text: string;
+    generation_mode: string;
+    word_count: number;
   };
 }
 
@@ -30,6 +33,7 @@ export interface AudioRequest {
   gender: 'male' | 'female';
   language?: string; // Language code: en, ta, hi
   username?: string;
+  voice_style?: "calm" | "balanced" | "uplifting";
 }
 
 export interface AudioResponse {

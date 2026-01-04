@@ -10,9 +10,18 @@ interface ManifestationResultProps {
   onStartNew: () => void;
   username?: string;
   className?: string;
+  generationMode?: string;
+  wordCount?: number;
 }
 
-export function ManifestationResult({ manifestation, onStartNew, username, className }: ManifestationResultProps) {
+export function ManifestationResult({
+  manifestation,
+  onStartNew,
+  username,
+  className,
+  generationMode = "deep",
+  wordCount
+}: ManifestationResultProps) {
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
 
@@ -80,6 +89,23 @@ export function ManifestationResult({ manifestation, onStartNew, username, class
           Read aloud daily or listen to the audio version
           <Star className="w-4 h-4 text-sunrise-gold" />
         </p>
+
+        {/* Mode Badge */}
+        {generationMode && (
+          <div className="flex items-center justify-center gap-2 mt-4">
+            <div className={`px-3 py-1 rounded-full text-xs font-medium ${generationMode === "quick"
+                ? "bg-sunrise-gold/20 text-sunrise-gold border border-sunrise-gold/30"
+                : "bg-lotus-pink/20 text-lotus-pink border border-lotus-pink/30"
+              }`}>
+              {generationMode === "quick" ? "⚡ Quick Mode" : "🧘 Deep Mode"}
+            </div>
+            {wordCount && (
+              <span className="text-xs text-muted-foreground">
+                {wordCount} words • ~{generationMode === "quick" ? "2" : "4"} min audio
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Manifestation Text */}

@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { FloatingElements } from "@/components/FloatingElements";
 import { ManifestationForm } from "@/components/ManifestationForm";
@@ -13,10 +14,26 @@ type AppState = "form" | "loading" | "review" | "result";
 
 
 export default function Index() {
+  const location = useLocation();
   const [appState, setAppState] = useState<AppState>("form");
   const [manifestation, setManifestation] = useState<string>("");
   const [editableManifestation, setEditableManifestation] = useState<string>("");
   const [username, setUsername] = useState<string>("");
+  const [generationMode, setGenerationMode] = useState<"quick" | "deep">("deep");
+  const [wordCount, setWordCount] = useState<number>(0);
+
+  // Handle navigation back from translation page
+  useEffect(() => {
+    const state = location.state as any;
+    if (state?.returnToResult && state?.manifestation) {
+      setEditableManifestation(state.manifestation);
+      setManifestation(state.manifestation);
+      if (state.username) {
+        setUsername(state.username);
+      }
+      setAppState("result");
+    }
+  }, [location.state]);
 
   const handleSubmit = async (data: ManifestationRequest) => {
     setAppState("loading");
@@ -25,10 +42,15 @@ export default function Index() {
     try {
       const response = await generateManifestation(data);
       const generatedText = response.data.manifestation_text;
+      const mode = response.data.generation_mode;
+      const count = response.data.word_count;
+
       setManifestation(generatedText);
       setEditableManifestation(generatedText);
+      setGenerationMode(mode as "quick" | "deep");
+      setWordCount(count);
       setAppState("review");
-      toast.success("✨ Your manifestation has been created!");
+      toast.success(`✨ Your ${mode} manifestation has been created!`);
     } catch (error) {
       console.error("Error generating manifestation:", error);
       toast.error(
@@ -118,6 +140,8 @@ export default function Index() {
               <ManifestationResult
                 manifestation={editableManifestation}
                 username={username}
+                generationMode={generationMode}
+                wordCount={wordCount}
                 onStartNew={handleStartNew}
               />
             )}

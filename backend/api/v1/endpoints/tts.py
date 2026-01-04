@@ -20,14 +20,20 @@ def cleanup_file(path: str):
     "/generate-audio",
     response_class=FileResponse,
     summary="Generate audio from text (TTS)",
-    description="Converts text to audio. Supports Male/Female voices in English, Tamil, and Hindi."
+    description="Converts text to audio with emotion-aware voice modulation. Supports calm, balanced, and uplifting styles."
 )
 async def generate_audio_endpoint(request: AudioRequest, background_tasks: BackgroundTasks):
     """
-    Endpoint to generate audio from text with multi-language support.
+    Generate audio with emotion-aware voice modulation.
+    
+    Supports three voice styles:
+    - calm: Meditative, soothing (default) - lower pitch, slower rate
+    - balanced: Natural, neutral narration - neutral prosody
+    - uplifting: Motivational, positive energy - higher pitch, dynamic
     """
     try:
-        logger.info(f"Generating audio: language={request.language}, gender={request.gender}, text_length={len(request.text)}")
+        voice_style = request.voice_style or "calm"
+        logger.info(f"Generating audio: lang={request.language}, gender={request.gender}, style={voice_style}, text_len={len(request.text)}")
         
         from datetime import datetime
         
@@ -36,14 +42,15 @@ async def generate_audio_endpoint(request: AudioRequest, background_tasks: Backg
         if request.username:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             safe_username = "".join(c for c in request.username if c.isalnum() or c in (' ', '_', '-')).strip().replace(' ', '_')
-            custom_filename = f"{safe_username}_{request.language}_{timestamp}"
+            custom_filename = f"{safe_username}_{request.language}_{voice_style}_{timestamp}"
             
-        # Generate audio with language support
+        # Generate audio with voice style
         file_path = await generate_audio_file(
             text=request.text,
             gender=request.gender,
-            language=request.language,  # Pass language parameter
-            filename=custom_filename
+            language=request.language,
+            filename=custom_filename,
+            voice_style=voice_style  # Pass voice style
         )
         
         # Only schedule cleanup if it's a temporary file (no username provided)

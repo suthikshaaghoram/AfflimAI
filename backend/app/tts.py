@@ -1,28 +1,50 @@
 import edge_tts
+import edge_tts.communicate
 import uuid
 import os
+from .ssml_generator import generate_ssml
+from .audio_sanitizer import sanitize_for_tts 
+
+# Monkeypatch edge_tts to allow raw SSML input
+# This is necessary because edge_tts >= 7.2.7 forces text escaping in Communicate.__init__
+# and does not provide an option to pass raw SSML.
+def patched_mkssml(tc, text):
+    return text
+
+# Disable escaping to preserve XML tags
+edge_tts.communicate.escape = lambda x: x
+
+# Disable default SSML wrapping
+edge_tts.communicate.mkssml = patched_mkssml
+
+# Disable splitting to prevent breaking XML tags in the middle
+# (Assuming the payload is within reasonable limits, e.g. < 10 mins text)
+edge_tts.communicate.split_text_by_byte_length = lambda text, limit: [text]
+
 
 async def generate_audio_file(
     text: str, 
     gender: str, 
     language: str = "en",
     filename: str = None, 
-    rate: str = "-10%"
+    voice_style: str = "calm"
 ) -> str:
     """
-    Generates an audio file from text using edge-tts.
-    Supports multiple languages: English, Tamil, Hindi.
+    Generates audio with emotion-aware voice modulation using SSML.
     
     Args:
         text (str): The text to speak.
         gender (str): 'male' or 'female'.
         language (str): Language code - 'en', 'ta' (Tamil), 'hi' (Hindi)
         filename (str, optional): Custom filename. If provided, saves to 'outputs/'.
-        rate (str): Speaking rate adjustment (default '-10%').
+        voice_style (str): Voice expression - 'calm', 'balanced', 'uplifting' (default: 'calm')
     
     Returns:
         str: Path to the generated audio file
     """
+    # Sanitize input text (remove intros, metadata, system phrases)
+    clean_text = sanitize_for_tts(text)
+
     # Voice selection based on language and gender
     voice_map = {
         # English (Indian accent)
@@ -46,8 +68,16 @@ async def generate_audio_file(
     language_voices = voice_map.get(language, voice_map["en"])
     voice = language_voices.get(gender.lower(), language_voices["female"])
     
-    # Using rate adjustment for duration
-    communicate = edge_tts.Communicate(text, voice, rate=rate)
+    # Generate SSML with emotion-aware prosody
+    ssml_text = generate_ssml(clean_text, voice_style, language, voice)
+    
+    # Clean SSML
+    final_ssml = ssml_text.strip().lstrip('\ufeff')
+    print(f"DEBUG SSML PAYLOAD:\n{final_ssml}\nEND PAYLOAD")
+
+    # Create communicate object with SSML
+    # Note: rate is now handled in SSML prosody, not as a parameter
+    communicate = edge_tts.Communicate(final_ssml, voice)
     
     if filename:
         # Persistent Output

@@ -7,7 +7,7 @@ interface FormSectionProps {
   icon?: ReactNode;
   children: ReactNode;
   className?: string;
-  accentColor?: "orange" | "pink" | "gold" | "sage" | "blue";
+  accentColor?: "orange" | "pink" | "gold" | "sage" | "blue" | "purple";
 }
 
 const accentStyles = {
@@ -16,6 +16,7 @@ const accentStyles = {
   gold: "from-sunrise-gold/20 to-secondary/50 border-sunrise-gold/30",
   sage: "from-sage/20 to-sage/5 border-sage/30",
   blue: "from-sky-blue/20 to-sky-blue/5 border-sky-blue/30",
+  purple: "from-purple-500/20 to-purple-300/10 border-purple-400/30",
 };
 
 const iconStyles = {
@@ -24,15 +25,16 @@ const iconStyles = {
   gold: "bg-gradient-to-br from-sunrise-gold to-sunrise-orange text-foreground",
   sage: "bg-gradient-to-br from-sage to-sage-deep text-primary-foreground",
   blue: "bg-gradient-to-br from-sky-blue to-sage text-foreground",
+  purple: "bg-gradient-to-br from-purple-500 to-purple-400 text-primary-foreground",
 };
 
-export function FormSection({ 
-  title, 
-  description, 
-  icon, 
-  children, 
+export function FormSection({
+  title,
+  description,
+  icon,
+  children,
   className,
-  accentColor = "orange" 
+  accentColor = "orange"
 }: FormSectionProps) {
   return (
     <div className={cn(

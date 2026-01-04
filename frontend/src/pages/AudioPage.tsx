@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { AudioPlayer } from "@/components/AudioPlayer";
+import { VoiceStyleSelector } from "@/components/VoiceStyleSelector";
 import { Loader } from "@/components/Loader";
 import { Header } from "@/components/Header";
 import { FloatingElements } from "@/components/FloatingElements";
@@ -29,6 +30,7 @@ export default function AudioPage() {
     const [selectedVoice, setSelectedVoice] = useState<"male" | "female" | null>(null);
     const [selectedAudioLanguage, setSelectedAudioLanguage] = useState<string>("en");
     const [supportedLanguages, setSupportedLanguages] = useState<Record<string, SupportedLanguage>>({});
+    const [voiceStyle, setVoiceStyle] = useState<"calm" | "balanced" | "uplifting">("calm");
 
     // Redirect if no manifestation data
     useEffect(() => {
@@ -86,11 +88,12 @@ export default function AudioPage() {
                 text: textToSpeak,
                 gender,
                 language: selectedAudioLanguage,
+                voice_style: voiceStyle,  // Pass voice style
             };
 
             const response = await generateAudio(request);
             setAudioUrl(response.audio_url);
-            toast.success("✨ Audio generated successfully!");
+            toast.success(`✨ Audio generated in ${voiceStyle} style!`);
         } catch (error) {
             console.error("Error generating audio:", error);
             toast.error(error instanceof Error ? error.message : "Failed to generate audio");
@@ -218,6 +221,15 @@ export default function AudioPage() {
                                 <AudioPlayer audioUrl={audioUrl} />
                             ) : (
                                 <div className="space-y-5">
+                                    {/* Voice Style Selector - NEW */}
+                                    <div className="mb-6">
+                                        <VoiceStyleSelector
+                                            value={voiceStyle}
+                                            onChange={setVoiceStyle}
+                                            disabled={isGeneratingAudio}
+                                        />
+                                    </div>
+
                                     <p className="text-sm text-muted-foreground flex items-center gap-2">
                                         <Sparkles className="w-4 h-4 text-sunrise-gold" />
                                         Choose your preferred voice:
@@ -262,7 +274,7 @@ export default function AudioPage() {
                         <Button
                             variant="outline"
                             size="lg"
-                            onClick={() => navigate(-1)}
+                            onClick={() => navigate("/translate", { state: { manifestation: state.manifestation, username: state.username } })}
                             className="rounded-xl border-2 hover:scale-105 transition-all"
                         >
                             <ArrowLeft className="w-5 h-5 mr-2" />

@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, Literal
 
 class ManifestationRequest(BaseModel):
     preferred_name: str = Field(..., description="You would like to be called as")
@@ -16,15 +16,25 @@ class ManifestationRequest(BaseModel):
     life_goals: str = Field(..., description="Life Goal (or Goals) (with timeline)")
     legacy: str = Field(..., description="How you would like others to remember you")
     manifestation_focus: str = Field(..., description="One thing you want to manifest")
+    generation_mode: Optional[Literal["quick", "deep"]] = Field(
+        default="deep",
+        description="Generation mode: 'quick' for ~2 min audio (200-250 words), 'deep' for ~4 min audio (≤500 words)"
+    )
 
 class ManifestationData(BaseModel):
     manifestation_text: str
+    generation_mode: str = Field(..., description="Mode used for generation")
+    word_count: int = Field(..., description="Actual word count")
 
 class AudioRequest(BaseModel):
     text: str = Field(..., description="The text to convert to audio")
     gender: str = Field(..., description="Gender of the voice (male/female)")
     language: str = Field(default="en", description="Language code: en, ta (Tamil), hi (Hindi)")
     username: Optional[str] = Field(None, description="Username for file naming")
+    voice_style: Optional[Literal["calm", "balanced", "uplifting"]] = Field(
+        default="calm",
+        description="Voice expression: 'calm' for meditation, 'balanced' for natural, 'uplifting' for motivation"
+    )
 
 class ManifestationResponse(BaseModel):
     status: str

@@ -1,9 +1,19 @@
 from .schemas import ManifestationRequest
+from .text_validator import get_mode_config
 
-def generate_manifestation_prompt(data: ManifestationRequest) -> str:
+def generate_manifestation_prompt(data: ManifestationRequest, generation_mode: str = "deep") -> str:
     """
-    Constructs a detailed prompt for the LLM based on user input.
+    Constructs a detailed prompt for the LLM based on user input and generation mode.
+    
+    Args:
+        data: User manifestation request data
+        generation_mode: "quick" or "deep" mode
+        
+    Returns:
+        Formatted prompt for LLM
     """
+    config = get_mode_config(generation_mode)
+    
     prompt = f"""
 You are an expert manifestation coach with deep knowledge of positive psychology,
 goal alignment, and motivational narrative design.
@@ -12,13 +22,28 @@ Your task is to generate a deeply personalized manifestation passage that inspir
 confidence, clarity, and purposeful action.
 
 OUTPUT CONSTRAINTS:
-- Length: Approximately 750 words (aiming for ~4 minutes of spoken audio)
+- Target Length: {config['target_words']} words
+- HARD MAXIMUM: {config['max_words']} words (DO NOT EXCEED THIS LIMIT)
+- Target Duration: ~{config['target_duration']} of spoken audio
+- Style: {config['instruction']}
 - Perspective: Second person ("you", "your")
 - Verb tense: Present tense only
 - Tone: Uplifting, grounded, confident, emotionally supportive
-- Style: Natural, human-like, flowing narrative
-- Output format: Plain text only
-- Do NOT include headings, labels, quotes, explanations, or meta commentary
+- Output format: Wrapped in <manifestation> tags
+- Do NOT include headings, labels, quotes, explanations, or meta commentary outside the tags
+
+CRITICAL OUTPUT FORMATTING:
+You must wrap your entire response in <manifestation> tags.
+Example:
+<manifestation>
+Your manifestation text here...
+</manifestation>
+
+CRITICAL WORD LIMIT RULE:
+Your output MUST NOT exceed {config['max_words']} words under any circumstances.
+Count carefully as you write. Prioritize quality and coherence over length.
+End naturally within the limit. Do not add filler text to reach a target.
+Better to be concise and impactful than to exceed the maximum.
 
 USER CONTEXT (INTEGRATION INSTRUCTIONS):
 The following details describe the user. DO NOT list these points sequentially.

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FormSection } from "@/components/FormSection";
 import { FormField } from "@/components/FormField";
+import { GenerationModeSelector } from "@/components/GenerationModeSelector";
 import { ManifestationRequest, getLastSubmission } from "@/lib/api";
 import { User, Star, Heart, Target, Sparkles, Wand2, History } from "lucide-react";
 import { toast } from "sonner";
@@ -30,6 +31,7 @@ const initialFormState: ManifestationRequest = {
 
 export function ManifestationForm({ onSubmit, isLoading }: ManifestationFormProps) {
   const [formData, setFormData] = useState<ManifestationRequest>(initialFormState);
+  const [generationMode, setGenerationMode] = useState<"quick" | "deep">("deep");
 
   const updateField = (field: keyof ManifestationRequest) => (value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -37,7 +39,8 @@ export function ManifestationForm({ onSubmit, isLoading }: ManifestationFormProp
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
+    // Add generation_mode to form data
+    onSubmit({ ...formData, generation_mode: generationMode });
   };
 
   const handleAutoFill = async () => {
@@ -231,6 +234,20 @@ export function ManifestationForm({ onSubmit, isLoading }: ManifestationFormProp
         />
       </FormSection>
 
+      {/* Generation Mode Selector - NEW */}
+      <FormSection
+        title="Generation Length"
+        description="Choose your manifestation depth 🎚️"
+        icon={<Wand2 className="w-6 h-6" />}
+        accentColor="purple"
+      >
+        <GenerationModeSelector
+          value={generationMode}
+          onChange={setGenerationMode}
+          disabled={isLoading}
+        />
+      </FormSection>
+
       {/* Submit Button */}
       <div className="pt-8 relative">
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -249,7 +266,7 @@ export function ManifestationForm({ onSubmit, isLoading }: ManifestationFormProp
         </Button>
         <p className="text-center text-sm text-muted-foreground mt-5 flex items-center justify-center gap-2">
           <Star className="w-4 h-4 text-sunrise-gold" />
-          Your personalized 500-word manifestation awaits
+          Your personalized {generationMode === "quick" ? "quick" : "deep"} manifestation awaits
           <Star className="w-4 h-4 text-sunrise-gold" />
         </p>
       </div>

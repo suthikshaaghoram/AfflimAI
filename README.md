@@ -1,13 +1,26 @@
-# ✨ AffirmAI - AI-Powered Multi-Language Manifestation Generator
+# ✨ AfflimAI - AI-Powered Multi-Language Manifestation Generator
 
-**AffirmAI** is an advanced AI-powered personalized manifestation generator that blends ancient astrological wisdom with modern psychology and cutting-edge AI technology. It generates customized manifestation passages in multiple languages, translates them with cultural sensitivity using RAG (Retrieval-Augmented Generation), and converts them into soothing audio with native voices.
+**AfflimAI** is an advanced AI-powered personalized manifestation generator that blends ancient astrological wisdom with modern psychology and cutting-edge AI technology. It generates customized manifestation passages in multiple languages, translates them with cultural sensitivity using RAG (Retrieval-Augmented Generation), and converts them into soothing audio with native voices.
+
+## 📑 Table of Contents
+
+- [Scope & Benefits](#-scope--benefits)
+- [Features](#-features)
+- [Technology Stack](#️-technology-stack)
+- [Quick Start](#-quick-start-guide)
+- [Usage](#-usage-guide)
+- [API Reference](#-api-reference)
+- [Documentation](#-documentation)
+- [Contributing](#-contributing)
+- [Changelog](#-changelog)
+- [License](#-license)
 
 ---
 
 ## 🎯 Scope & Benefits
 
 ### **Scope**
-AffirmAI combines four powerful domains:
+AfflimAI combines four powerful domains:
 1. **Astrology**: Analyzes user birth details (Nakshatra, Lagna) to align manifestations with cosmic energy.
 2. **Psychology**: Incorporates user-defined strengths, weaknesses, and life goals for psychologically resonant content.
 3. **Artificial Intelligence**: Utilizes advanced LLMs (DeepSeek-V3) to synthesize data into unique, poetic narratives.
@@ -74,6 +87,8 @@ AffirmAI combines four powerful domains:
 ---
 
 ## 📂 Project Structure
+
+> 📖 For detailed architecture documentation, see [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)
 
 ```
 AfflimAI/
@@ -180,7 +195,9 @@ Frontend: `http://localhost:8080`
 
 ---
 
-## � API Reference
+## 🔗 API Reference
+
+> 📖 **Complete API Documentation**: See [docs/API_REFERENCE.md](./docs/API_REFERENCE.md) for detailed endpoint documentation with code examples in Python, JavaScript, and cURL.
 
 ### 1. Generate Manifestation
 **Endpoint**: `POST /api/v1/generate-manifestation`
@@ -279,6 +296,10 @@ Frontend: `http://localhost:8080`
 
 ## 🔍 RAG Translation System
 
+> 📖 **Deep Dive**: For comprehensive RAG system documentation, see [docs/RAG_SYSTEM.md](./docs/RAG_SYSTEM.md)
+
+### Quick Overview
+
 ### How It Works
 
 ```
@@ -332,6 +353,33 @@ Frontend: `http://localhost:8080`
 ---
 
 ## 📅 Changelog
+
+### January 4, 2026 - Audio Generation Quality & SSML Fixes
+
+#### 🔊 Audio Engine Overhaul
+1.  **SSML Logic Refactor** (`app/ssml_generator.py`)
+    -   **Problem**: Strict SSML tags (`<break>`, `<emphasis>`) caused `NoAudioReceived` errors with Edge TTS, especially for non-English languages like Tamil.
+    -   **Fix**:
+        -   **Natural Pausing**: Replaced explicit `<break time="..."/>` tags with natural punctuation (ellipses `...`, periods `.` ) which neural voices interpret natively for realistic pausing.
+        -   **Emotion Handling**: Disabled explicit `<emphasis>` tags. Enabled the neural engine's native intonation capabilities to handle emotion naturally based on text context.
+        -   **Standard Compliance**: Removed `mstts` namespace and fixed `xml:lang` attributes to ensure perfect compatibility with standard SSML parsers.
+
+2.  **Audio Sanitization** (`app/audio_sanitizer.py`)
+    -   **Problem**: Generated audio included meta-text like "Here is your manifestation" or Markdown headers.
+    -   **Fix**: Added regex-based sanitization layer to strip:
+        -   Boilerplate intros ("Here is...", "Translation for...")
+        -   Metadata lines (Voice info, Language tags)
+        -   Markdown formatting artifacts (headers, horizontal rules)
+    -   **Result**: Audio now contains *only* the pure manifestation passage.
+
+3.  **Verification Flow** (`backend/verify_flow.py`)
+    -   Implemented end-to-end verification script testing:
+        -   Health Check → Manifestation Gen → Translation → Audio Gen (EN) → Audio Gen (TA)
+    -   Confirmed 100% success rate across all supported languages.
+
+**Stats**: Fixed critical audio failures, improved naturalness of voices, ensured stable multi-language support.
+
+---
 
 ### January 1, 2026 - Interaction Flow Enhancement
 
@@ -466,6 +514,8 @@ Frontend: `http://localhost:8080`
 
 ## 👨‍💻 Development
 
+> 📖 **Developer Guide**: See [docs/DEVELOPER_GUIDE.md](./docs/DEVELOPER_GUIDE.md) for complete setup, workflow, and contribution guidelines.
+
 ### Running Tests
 ```bash
 # Test backend API
@@ -499,13 +549,43 @@ npm run preview                         # Preview production build
 
 ---
 
+## 📚 Documentation
+
+Comprehensive documentation is available in the `docs/` directory:
+
+| Document | Description |
+|----------|-------------|
+| [ARCHITECTURE.md](./docs/ARCHITECTURE.md) | System design, data flow, and component details |
+| [API_REFERENCE.md](./docs/API_REFERENCE.md) | Complete API documentation with examples |
+| [DEVELOPER_GUIDE.md](./docs/DEVELOPER_GUIDE.md) | Setup, development workflow, coding standards |
+| [USER_GUIDE.md](./docs/USER_GUIDE.md) | End-user instructions and best practices |
+| [DEPLOYMENT.md](./docs/DEPLOYMENT.md) | Production deployment guide (Docker, PaaS, etc.) |
+| [RAG_SYSTEM.md](./docs/RAG_SYSTEM.md) | Deep dive into translation pipeline |
+| [CONTRIBUTING.md](./docs/CONTRIBUTING.md) | Contribution guidelines and standards |
+| [CHANGELOG.md](./CHANGELOG.md) | Version history and release notes |
+
+---
+
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+> 📖 **Full Guidelines**: See [docs/CONTRIBUTING.md](./docs/CONTRIBUTING.md) for detailed contribution process.
+
+We welcome contributions! Here's how to get started:
+
+1. Read [CONTRIBUTING.md](./docs/CONTRIBUTING.md) for guidelines
+2. Fork the repository
+3. Create a feature branch (`git checkout -b feature/amazing-feature`)
+4. Make your changes following our coding standards
+5. Test thoroughly
+6. Commit with conventional commit messages
+7. Push to your fork
+8. Open a Pull Request
+
+---
+
+## 📝 Changelog
+
+See [CHANGELOG.md](./CHANGELOG.md) for version history and release notes.
 
 ---
 
@@ -525,6 +605,6 @@ This project is for personal use and educational purposes.
 
 ---
 
-*Made with ❤️ and positive intentions by Suthikshaa Ghoram*
+*Made with ❤️ and positive intentions by Suthikshaa Aghoram*
 
 **Last Updated**: January 1, 2026
