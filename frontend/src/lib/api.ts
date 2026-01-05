@@ -38,7 +38,16 @@ export interface AudioRequest {
 
 export interface AudioResponse {
   audio_url: string;
+  filename: string;
   status: string;
+}
+
+export interface BackgroundTrack {
+  id: string;
+  display_name: string;
+  filename: string;
+  is_default: boolean;
+  url: string;
 }
 
 export async function generateManifestation(data: ManifestationRequest): Promise<ManifestationResponse> {
@@ -77,6 +86,12 @@ export async function getLastSubmission(): Promise<ManifestationRequest> {
   return response.json();
 }
 
+export interface AudioResponse {
+  audio_url: string;
+  filename: string;
+  status: string;
+}
+
 export async function generateAudio(data: AudioRequest): Promise<AudioResponse> {
   const response = await fetch(`${API_BASE_URL}/api/v1/generate-audio`, {
     method: 'POST',
@@ -91,13 +106,72 @@ export async function generateAudio(data: AudioRequest): Promise<AudioResponse> 
     throw new Error(error.detail || 'Failed to generate audio');
   }
 
+  // Extract filename from Content-Disposition header
+  const disposition = response.headers.get('content-disposition');
+  let filename = '';
+  if (disposition && disposition.indexOf('attachment') !== -1) {
+    const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+    const matches = filenameRegex.exec(disposition);
+    if (matches != null && matches[1]) {
+      filename = matches[1].replace(/['"]/g, '');
+    }
+  }
+
+  // If not found in header, fallback might be needed or let it be empty?
+  // Backend sets it unless error.
+
   // Backend returns audio file, create a Blob URL
   const blob = await response.blob();
   const audio_url = URL.createObjectURL(blob);
 
   return {
     audio_url,
+    filename,
     status: 'success'
+  };
+}
+
+// Background Audio API
+export async function getBackgroundTracks(): Promise<BackgroundTrack[]> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/background-tracks`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: 'Failed to fetch background tracks' }));
+    throw new Error(error.detail || 'Failed to fetch background tracks');
+  }
+
+  // Prepend API_BASE_URL to the relative URLs returned by backend if needed
+  // But the backend returns /api/v1/..., so we just need to join with base
+  const tracks: BackgroundTrack[] = await response.json();
+  return tracks.map(track => ({
+    ...track,
+    url: `${API_BASE_URL}${track.url}`
+  }));
+}
+
+export async function uploadBackgroundTrack(file: File): Promise<BackgroundTrack> {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const response = await fetch(`${API_BASE_URL}/api/v1/upload-background-track`, {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: 'Failed to upload background track' }));
+    throw new Error(error.detail || 'Failed to upload background track');
+  }
+
+  const track: BackgroundTrack = await response.json();
+  return {
+    ...track,
+    url: `${API_BASE_URL}${track.url}`
   };
 }
 
@@ -159,3 +233,45 @@ export async function translateManifestation(data: TranslationRequest): Promise<
   return response.json();
 }
 
+export interface FinalizeAudioRequest {
+  voice_filename: string;
+  background_track_id: string;
+  bg_volume: number;
+  voice_volume?: number;
+  username: string;
+}
+
+export async function finalizeAudio(data: FinalizeAudioRequest): Promise<AudioResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/finalize-audio`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: 'Failed to finalize audio' }));
+    throw new Error(error.detail || 'Failed to finalize audio');
+  }
+
+  // Extract filename
+  const disposition = response.headers.get('content-disposition');
+  let filename = '';
+  if (disposition && disposition.indexOf('attachment') !== -1) {
+    const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+    const matches = filenameRegex.exec(disposition);
+    if (matches != null && matches[1]) {
+      filename = matches[1].replace(/['"]/g, '');
+    }
+  }
+
+  const blob = await response.blob();
+  const audio_url = URL.createObjectURL(blob);
+
+  return {
+    audio_url,
+    filename,
+    status: 'success'
+  };
+}

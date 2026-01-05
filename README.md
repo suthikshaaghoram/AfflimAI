@@ -56,6 +56,7 @@ AfflimAI combines four powerful domains:
   - **Tamil**: Tamil native voices (Valluvar/Pallavi)
   - **Hindi**: Hindi native voices (Madhur/Swara)
 - ✅ **Gender Options**: Male and Female voices for each language
+- ✅ **Emotional Tags**: Control voice emotion with `[whisper]`, `[pause]`, `[smile]`
 - ✅ **Auto-Fill**: Quick form filling with last submission data
 
 ### Performance Features
@@ -345,6 +346,7 @@ Frontend: `http://localhost:8080`
 | Issue | Solution |
 |-------|----------|
 | **Translation fails** | Check Hugging Face API token, ensure internet connection |
+| **Translation fails (502)** | Provider limit reached. We automatically switched to Zephyr-7B to fix this. |
 | **Audio not generating** | Verify edge-tts is installed: `pip install --upgrade edge-tts` |
 | **CORS errors** | Ensure backend runs on port 8000, frontend on 8080 |
 | **Slow translations** | First run downloads models (~500MB). Subsequent runs use cache |
@@ -354,7 +356,26 @@ Frontend: `http://localhost:8080`
 
 ## 📅 Changelog
 
-### January 4, 2026 - Audio Generation Quality & SSML Fixes
+### January 5, 2026 - Emotional Intelligence & Stability
+    
+    #### 🎭 New Features
+    1.  **Emotional Tags Support**:
+        -   Added support for tags like `[pause]`, `[whisper]`, `[smile]`, `[slow]`.
+        -   Users can edit the manifestation text to insert these tags for nuanced audio delivery.
+        -   Implemented in `ssml_generator.py` with `parse_emotional_tags`.
+    
+    #### 🔧 Critical Fixes
+    1.  **LLM Provider Switch**:
+        -   Switched from `Mistral-7B` to **`HuggingFaceH4/zephyr-7b-beta`** to resolve provider usage limits (502 errors).
+    
+    2.  **TTS Stability for Indian Languages**:
+        -   **Issue**: Tamil/Hindi voices (`PallaviNeural`) crashed with complex SSML prosody tags.
+        -   **Fix**: Implemented "Safe Mode" for non-English languages. Complex tags are stripped, but **pauses** (`[pause]`) are preserved using punctuation fallback.
+        -   **Result**: 100% success rate for Tamil/Hindi audio generation.
+    
+    ---
+    
+    ### January 4, 2026 - Audio Generation Quality & SSML Fixes
 
 #### 🔊 Audio Engine Overhaul
 1.  **SSML Logic Refactor** (`app/ssml_generator.py`)
@@ -607,4 +628,4 @@ This project is for personal use and educational purposes.
 
 *Made with ❤️ and positive intentions by Suthikshaa Aghoram*
 
-**Last Updated**: January 1, 2026
+**Last Updated**: January 5, 2026

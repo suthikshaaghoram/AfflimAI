@@ -9,3 +9,4 @@ aiofiles
 chromadb
 sentence-transformers
 nltk
+pydub

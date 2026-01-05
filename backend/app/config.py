@@ -4,7 +4,7 @@ from pydantic import ValidationError
 
 class Settings(BaseSettings):
     HUGGINGFACE_API_KEY: str
-    MODEL_ID: str = "mistralai/Mistral-7B-Instruct-v0.2"
+    MODEL_ID: str = "HuggingFaceH4/zephyr-7b-beta"
     EMBEDDING_MODEL: str = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
     CHROMA_DB_PATH: str = "./chroma_db"
     

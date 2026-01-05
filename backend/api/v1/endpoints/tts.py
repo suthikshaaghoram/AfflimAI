@@ -54,8 +54,8 @@ async def generate_audio_endpoint(request: AudioRequest, background_tasks: Backg
         )
         
         # Only schedule cleanup if it's a temporary file (no username provided)
-        if not custom_filename:
-            background_tasks.add_task(cleanup_file, file_path)
+        # if not custom_filename:
+        #     background_tasks.add_task(cleanup_file, file_path)
         
         download_filename = f"{custom_filename}.mp3" if custom_filename else "manifestation.mp3"
             

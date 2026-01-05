@@ -200,6 +200,38 @@ You'll receive a personalized 500-word manifestation passage that:
 > - Make it resonate more deeply with you
 
 ---
+    
+    ## Using Emotional Tags 🎭
+    
+    AfflimAI supports **Emotional Tags** that let you control *how* your manifestation is spoken. You can insert these tags directly into the text during the **Edit** phase.
+    
+    ### Available Tags
+    
+    | Tag | Effect | Example | Supported Languages |
+    |-----|--------|---------|---------------------|
+    | `[pause]` | Inserts a brief silence | "Hello. [pause] World." | ✅ All |
+    | `[breathe]` | Simulates a deep breath | "Relax. [breathe] Let go." | ✅ All |
+    | `[still]` | A longer, meditative pause | "Be still. [still] Now listen." | ✅ All |
+    | `[whisper]` | Soft, intimate whispering voice | "[whisper]You are safe.[/whisper]" | 🇺🇸 English Only |
+    | `[smile]` | Warm, happy, smiling tone | "[smile]I am so grateful![/smile]" | 🇺🇸 English Only |
+    | `[slow]` | Deep, slow, emphatic delivery | "[slow]I am powerful.[/slow]" | 🇺🇸 English Only |
+    | `[firm]` | Loud, confident assertion | "[firm]I claim my success.[/firm]" | 🇺🇸 English Only |
+    | `[gentle]` | Soft, comforting tone | "[gentle]It is okay.[/gentle]" | 🇺🇸 English Only |
+    
+    ### How to Use
+    
+    1.  **Generate** your manifestation.
+    2.  Click **"Edit"** in the review screen.
+    3.  **Insert tags** where you want to change the emotion.
+    4.  **Save** and generate audio!
+    
+    > [!NOTE]
+    > **Non-English Languages**: For Tamil and Hindi, complex emotional tags like `[whisper]` or `[smile]` are automatically filtered out to ensure smooth audio generation. However, **Pause tags** (`[pause]`, `[breathe]`) work perfectly in all languages!
+    
+    **Example:**
+    > *"Universe, hear me. [pause] [whisper]I am ready to receive.[/whisper] [smile]My heart is open to abundance.[/smile]"*
+    
+    ---
 
 ## Translating Your Manifestation
 
@@ -455,4 +487,4 @@ Happy manifesting! 🙏
 
 ---
 
-*Last Updated: January 2, 2026*
+*Last Updated: January 5, 2026*
