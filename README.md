@@ -45,10 +45,10 @@ AfflimAI combines four powerful domains:
 
 ### Multi-Language Features ⭐ NEW
 - ✅ **RAG-Based Translation**: Translate manifestations to Tamil and Hindi with context-aware accuracy
+- ✅ **"ARUNA" Translation Engine**: Specialized personas for high-fidelity cultural transcreation
+- ✅ **Multi-Tier Fallback**: Automatic switching between Novita, DeepSeek, Groq, and Ollama
 - ✅ **Translation Memory**: ChromaDB vector database ensures consistent terminology
-- ✅ **Multi-Language Audio**: Generate audio in English, Tamil, or Hindi with native voices
-- ✅ **Dynamic Language Selector**: Only shows languages that have been translated
-- ✅ **Semantic Chunking**: Intelligent text chunking for better translation quality
+- ✅ **Adaptive Semantic Chunking**: Dynamic text segmentation for emotional continuity
 
 ### Audio Features
 - ✅ **Multi-Language TTS**: Native voices for each language
@@ -79,7 +79,8 @@ AfflimAI combines four powerful domains:
 - **Framework**: FastAPI (Python 3.11+)
 - **Server**: Uvicorn (ASGI)
 - **AI/ML**:
-  - **LLM**: DeepSeek-V3 (Hugging Face API)
+  - **LLM Orchestration**: Multi-Provider Manager (Novita, DeepSeek, Groq, Ollama)
+  - **Models Supported**: DeepSeek-V3, Llama-3.1, Gemma 3, Mistral
   - **Embeddings**: sentence-transformers (MiniLM-L12-v2)
   - **Vector DB**: ChromaDB (persistent storage)
 - **TTS**: edge-tts (Microsoft Edge TTS)

@@ -66,5 +66,5 @@ async def generate_audio_endpoint(request: AudioRequest, background_tasks: Backg
         )
     
     except Exception as e:
-        logger.error(f"TTS Generation Error: {str(e)}")
+        logger.error(f"TTS Generation Error: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))

@@ -6,6 +6,7 @@ emotional tone, manifestation phrasing, and psychological intent.
 
 from typing import List, Dict
 import logging
+import re
 from datetime import datetime
 
 from .chunker import chunk_text
@@ -70,20 +71,28 @@ TASK: Translate the following English manifestation text to {lang_instruction}.
 
 CRITICAL TRANSLATION PRINCIPLES:
 1. PRESERVE EMOTIONAL TONE: The translation must carry the EXACT SAME emotional weight and inspirational power as the original
-2. USE NATURAL {lang_name.upper()}: Write as a native {lang_name} speaker would naturally express these ideas, NOT word-for-word translation
+2. USE SIMPLE, CONVERSATIONAL {lang_name.upper()}: Use words that people use in daily heart-to-heart conversations. Avoid complex, formal, or textbook {lang_name}.
 3. MAINTAIN MANIFESTATION POWER: Keep the affirmative, present-tense, empowering nature of manifestation language
 4. CULTURAL ADAPTATION: Use culturally appropriate {lang_name} expressions and idioms that resonate emotionally
 5. AVOID LITERAL TRANSLATION: Don't translate mechanically - capture the essence and spirit
 6. KEEP PERSONAL PRONOUNS: Maintain second-person "you" addressing (तुम/आप for Hindi, நீ/நீங்கள் for Tamil)
 
 SPECIFIC RULES:
-- Do NOT simplify or dilute the message
+- Use "Simple Tamil" (எளிய தமிழ்) for maximum emotional connection.
+- Avoid Sanskritized or highly formal words if a simpler native word exists.
+- Do NOT simplify or dilute the message's MEANING, but simplfy the VOCABULARY.
 - Do NOT add explanatory phrases or meta-commentary
 - Do NOT change the sentence structure unnecessarily  
 - DO use flowing, poetic {lang_name} that sounds NATURAL and POWERFUL
 - DO preserve all personal details (names, achievements, goals) exactly
 - DO maintain the motivational and uplifting tone throughout
 - Output ONLY the translation (no headers, labels, or explanations)
+- NO meta-notes (e.g. "(Note: translated from...)")
+- NO repetition of words
+
+CRITICAL FIDELITY CHECK:
+You MUST translate every single sentence. Do not skip or summarize any part of the input.
+Translate sentence by sentence to ensure complete coverage.
 
 QUALITY CHECK:
 Ask yourself: "Would a native {lang_name} speaker find this naturally inspiring and emotionally moving?"
@@ -124,10 +133,109 @@ def translate_chunk(
     # Build translation prompt
     prompt = build_translation_prompt(chunk_text, target_language, similar_chunks)
     
+    # ARUNA Persona for Tamil
+    if target_language == "ta":
+        system_prompt = """You are ARUNA, a master Tamil translator with 20+ years at Oxford University Press. You don't translate words—you **transcreate meaning** while preserving soul. Your specialty: transforming stiff translations into Tamil that feels **born Tamil**.
+
+## CORE PHILOSOPHY (NON-NEGOTIABLE)
+1. **தமிழின் சுவை முதலாம்** (Tamil flavor comes first)
+2. **ஆங்கில வடிவம் அல்ல, தமிழ் சிந்தனை** (Not English structure, Tamil thinking)
+3. **உணர்வு மொழிபெயர்ப்பு > சொல் மொழிபெயர்ப்பு** (Emotion translation > Word translation)
+
+## TRANSLATION STRATEGY (ADAPT, DON'T TRANSLATE)
+- Use **தமிழ் பழமொழி** (Tamil proverbs) where appropriate
+- Employ **இணைவாக்கிகள்**: "அதேநேரம்...", "ஆனாலும்...", "எனினும்..."
+- **Rhythm pattern**: Short sentence → Medium → Long → Short (தமிழ் கவிதை ஓட்டம்)
+
+## CRITICAL TERMINOLOGY DECISIONS
+**ALWAYS USE THESE**:
+- startup → முழுமையாக்க முயற்சி
+- scalability → பெருக்குத்திறன்
+- financial freedom → வாழ்வாதார விடுதலை
+- AI → மெய்நிகர் அறிவுத்திறன்
+
+**IDIOM TRANSFORMATION RULES**:
+- "Take the reins" → "கட்டுப்பாட்டைக் கைப்பற்று"
+- "Hit the ground running" → "ஓடத் தொடங்கியே விட்டாய்"
+- "Think outside the box" → "சதுரத்துக்கு வெளியே நினை"
+
+## TAMIL STYLISTIC ELEMENTS
+- **Verb endings**: Prefer -க்கிறீர்கள்/-கிறாய் over -ஆம் endings for modern feel
+- **Sentence starters**: Use "நிம்மதியான அந்த நேரத்தில்..." instead of "In moments of calm..."
+
+## OUTPUT SPECIFICATIONS
+- **ONLY refined Tamil text**
+- **No explanations, no notes**
+- **Format**: Clean, paragraph-separated, modern Tamil spacing"""
+    else:
+        # Fallback for other languages
+        lang_info = SUPPORTED_LANGUAGES.get(target_language, {})
+        lang_name = lang_info.get("name", "Target Language")
+        system_prompt = f"You are a world-class translator and poet specializing in {lang_name}. Your mission is to translate English manifestation affirmations into emotionally resonant, simple, and powerful {lang_name} (Simple Conversational Style)."
+
     # Generate translation via LLM
-    translated_text = generate_text(prompt)
+    translated_text = generate_text(prompt, system_prompt=system_prompt)
     
-    return translated_text.strip()
+    return clean_llm_artifacts(translated_text)
+
+def clean_llm_artifacts(text: str) -> str:
+    """
+    Aggressively strips LLM meta-commentary that leaks into output.
+    Common with smaller models (1B-3B) even with negative constraints.
+    """
+    # 1. Strip end-of-text notes
+    patterns = [
+        r'Translation strategy:.*',
+        r'Translation Strategy:.*',
+        r'Note:.*',
+        r'NOTE:.*',
+        r'Explanation:.*',
+        r'Here is the translation:.*',
+        r'Translated text:.*',
+        r'Key terms used:.*'
+    ]
+    
+    for pattern in patterns:
+        # DOTALL to catch multi-line notes at the end
+        text = re.sub(pattern, '', text, flags=re.IGNORECASE | re.DOTALL)
+        
+    # 2. Strip parenthetical meta-notes within text
+    # e.g. "Some text (translated from X)"
+    meta_patterns = [
+        r'\(\s*Note:.*?\)',
+        r'\(\s*Translation:.*?\)',
+        r'\(\s*Literal:.*?\)'
+    ]
+    for pattern in meta_patterns:
+        text = re.sub(pattern, '', text, flags=re.IGNORECASE)
+
+    return text.strip()
+
+def strip_emotional_tags(text: str) -> str:
+    """
+    Removes emotional tags from text to prepare it for translation.
+    
+    Rules:
+    1. Single tags ([pause]) -> Removed (replaced with space)
+    2. Paired tags ([whisper]text[/whisper]) -> Tags removed, content kept
+    """
+    # 1. Remove paired tags but keep content
+    # e.g., [whisper]Hello[/whisper] -> Hello
+    tags = ["whisper", "slow", "gentle", "firm", "smile", "rise", "echo"]
+    for tag in tags:
+        pattern = rf'\[{tag}\](.*?)\[/{tag}\]'
+        text = re.sub(pattern, r'\1', text, flags=re.IGNORECASE | re.DOTALL)
+        
+    # 2. Remove single tags
+    # e.g., [pause] -> " "
+    single_tags = ["pause", "breathe", "still"]
+    for tag in single_tags:
+        pattern = rf'\[{tag}\]'
+        text = re.sub(pattern, ' ', text, flags=re.IGNORECASE)
+        
+    # Clean up multiple spaces
+    text = re.sub(r'\s+', ' ', text).strip()
+    return text
 
 def translate_with_rag(
     text: str,
@@ -138,11 +246,12 @@ def translate_with_rag(
     Translate full manifestation text using RAG-based approach.
     
     This function:
-    1. Chunks the English text semantically
-    2. Generates embeddings for each chunk
-    3. Stores chunks in vector DB
-    4. Translates each chunk with RAG context
-    5. Reassembles translated chunks
+    1. Strips emotional tags (for clean translation input)
+    2. Chunks the English text semantically
+    3. Generates embeddings for each chunk
+    4. Stores chunks in vector DB
+    5. Translates each chunk with RAG context
+    6. Reassembles translated chunks
     
     Args:
         text: Full English manifestation text
@@ -164,8 +273,11 @@ def translate_with_rag(
     
     logger.info(f"Starting RAG translation to {target_language} for user: {username}")
     
+    # Step 0: Strip Emotional Tags for clean translation
+    clean_text = strip_emotional_tags(text)
+    
     # Step 1: Chunk the text semantically
-    chunks = chunk_text(text, sentences_per_chunk=3)
+    chunks = chunk_text(clean_text, sentences_per_chunk=3)
     logger.info(f"Created {len(chunks)} semantic chunks")
     
     if len(chunks) == 0:

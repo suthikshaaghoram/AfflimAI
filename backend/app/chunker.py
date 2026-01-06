@@ -16,39 +16,70 @@ except LookupError:
     logger.info("Downloading NLTK punkt tokenizer...")
     nltk.download('punkt', quiet=True)
 
-def chunk_text(text: str, sentences_per_chunk: int = 3) -> List[str]:
+def chunk_text(text: str, sentences_per_chunk: int = 3, target_token_limit: int = 140) -> List[str]:
     """
-    Split text into semantic chunks of 2-3 sentences each.
+    Split text into adaptive semantic chunks.
     
-    This preserves the narrative flow by not breaking mid-thought
-    and creates chunks that are meaningful for translation context.
+    Logic:
+    - Min 2 sentences (unless solitary long sentence)
+    - Max 4 sentences (to prevent massive chunks)
+    - Max ~140 tokens (soft limit for emotional focus)
+    - Break early if token limit reached, but prefer keeping at least 2 sentences.
     
     Args:
-        text: The full manifestation text to chunk
-        sentences_per_chunk: Number of sentences per chunk (default: 3)
+        text: Full text
+        sentences_per_chunk: Deprecated/Soft reference (max sentences)
+        target_token_limit: Soft max tokens per chunk
         
     Returns:
-        List of text chunks, each containing 2-3 sentences
+        List of chunks
     """
-    # Tokenize into sentences
     sentences = nltk.sent_tokenize(text)
     
-    if len(sentences) == 0:
+    if not sentences:
         return []
-    
+        
     chunks = []
     current_chunk = []
+    current_tokens = 0
+    
+    # Heuristic: 1 word approx 1.3 tokens. 
+    # Or simplified: split by spaces count.
     
     for i, sentence in enumerate(sentences):
-        current_chunk.append(sentence)
+        # Calculate approx tokens for this sentence
+        sent_tokens = len(sentence.split()) * 1.3
         
-        # Create chunk when we have enough sentences or reached the end
-        if len(current_chunk) >= sentences_per_chunk or i == len(sentences) - 1:
-            chunk_text = ' '.join(current_chunk)
-            chunks.append(chunk_text)
+        # Add to current
+        current_chunk.append(sentence)
+        current_tokens += sent_tokens
+        
+        num_sentences = len(current_chunk)
+        
+        # DECISION: Should we close this chunk?
+        
+        # Rule 1: Hard Max Sentences (4)
+        if num_sentences >= 4:
+            chunks.append(' '.join(current_chunk))
             current_chunk = []
-    
-    logger.info(f"Chunked text into {len(chunks)} semantic chunks from {len(sentences)} sentences")
+            current_tokens = 0
+            continue
+            
+        # Rule 2: Token Limit Reached (Soft)
+        # But ensure at least 2 sentences if possible (unless this one sentence is huge)
+        if current_tokens >= target_token_limit:
+            if num_sentences >= 2 or sent_tokens > target_token_limit:
+                 chunks.append(' '.join(current_chunk))
+                 current_chunk = []
+                 current_tokens = 0
+            # Else: keep adding 1 more to reach min 2 (unless next one makes it massive? 
+            # for now, keep logic simple: try to reach 2)
+            
+    # Add any remaining
+    if current_chunk:
+        chunks.append(' '.join(current_chunk))
+        
+    logger.info(f"Adaptive Chunking: {len(chunks)} chunks from {len(sentences)} sentences")
     return chunks
 
 def chunk_with_overlap(text: str, sentences_per_chunk: int = 3, overlap: int = 1) -> List[dict]:

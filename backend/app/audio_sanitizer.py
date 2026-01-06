@@ -24,9 +24,10 @@ INTRO_PATTERNS = [
 ]
 
 # 2. Metadata lines (e.g., "(Voice: Calm)", "[Language: Tamil]")
+# Limit length to avoid matching full content wrapped in brackets/tags (e.g. [slow]...[/slow])
 METADATA_PATTERNS = [
-    r"^\(.*\)$",  # Lines purely in parentheses
-    r"^\[.*\]$",  # Lines purely in brackets
+    r"^\(.{1,100}\)$",  # Lines purely in parentheses (short)
+    r"^\[.{1,100}\]$",  # Lines purely in brackets (short)
     r"^voice:.*",
     r"^language:.*",
     r"^mode:.*",

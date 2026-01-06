@@ -8,6 +8,15 @@ class Settings(BaseSettings):
     EMBEDDING_MODEL: str = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
     CHROMA_DB_PATH: str = "./chroma_db"
     
+    # New Provider Settings (Optional)
+    GROQ_API_KEY: str = ""  # Optional, but needed for Groq
+    GROQ_MODEL: str = "llama-3.1-8b-instant"
+    
+    OLLAMA_BASE_URL: str = "http://localhost:11434"
+    OLLAMA_MODEL: str = "gemma3:1b"
+    
+    DEEPSEEK_API_KEY: str = "" # Optional
+    
     class Config:
         env_file = ".env"
         extra = "ignore"
