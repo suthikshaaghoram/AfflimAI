@@ -9,7 +9,7 @@
 - [Technology Stack](#️-technology-stack)
 - [Quick Start](#-quick-start-guide)
 - [Usage](#-usage-guide)
-- [API Reference](#-api-reference)
+- [API Reference](#-api-reference). 
 - [Documentation](#-documentation)
 - [Contributing](#-contributing)
 - [Changelog](#-changelog)
@@ -49,6 +49,12 @@ AfflimAI combines four powerful domains:
 - ✅ **Multi-Tier Fallback**: Automatic switching between Novita, DeepSeek, Groq, and Ollama
 - ✅ **Translation Memory**: ChromaDB vector database ensures consistent terminology
 - ✅ **Adaptive Semantic Chunking**: Dynamic text segmentation for emotional continuity
+
+### LinkedIn Integration ⭐ NEW
+- ✅ **Stealth Scraper**: Advanced evasion using `playwright-stealth`
+- ✅ **AI Captcha Solver**: Automatic reCAPTCHA bypass with **Buster**
+- ✅ **Headless Background**: Fully invisible execution support
+- ✅ **One-Click Import**: Instantly populate form from public LinkedIn profile
 
 ### Audio Features
 - ✅ **Multi-Language TTS**: Native voices for each language
@@ -356,6 +362,34 @@ Frontend: `http://localhost:8080`
 ---
 
 ## 📅 Changelog
+
+### January 7, 2026 - Stealth Scraping & Translation Mastery
+    
+    #### 🕵️‍♂️ LinkedIn Stealth Scraper
+    1.  **Undetectable Automation**:
+        -   Built `LinkedInSevice` with `playwright-stealth` to bypass bot detection.
+        -   **AI Captcha Solver**: Integrated **Buster AI** to automatically solving reCAPTCHA v2 challenges.
+        -   **Deep Scan Logic**: Implemented frame-scanning to find hidden checkboxes in nested iframes.
+        -   **Headless Background Mode**: Configured `--headless=new` to run extensions invisibly in the background.
+    
+    2.  **Robust Session Management**:
+        -   Implemented `session.json` persistence to save cookies and avoid repeated logins.
+        -   Added auto-recovery logic to switch to visible mode only if session expires.
+    
+    #### 🗣️ "Human-Like" Translation & Audio
+    1.  **High-Fidelity "ARUNA" Matrix**:
+        -   Overhauled Tamil translation engine to prioritize **Deeply Emotional & Natural** phrasing over literal accuracy.
+        -   **Style Guide**: Added strict rules to avoid "Textbook Tamil" and use "Mentor/Poet" voice.
+        -   **Acronym Protection**: Enforced rule to keep English acronyms (AI, CEO, SIH) unchanged.
+    
+    2.  **Full-Context Translation**:
+        -   Optimized `rag_translate.py` to bypass chunking for standard passages (<3000 chars), ensuring perfect flow and context.
+    
+    3.  **Hyper-Personalized Content**:
+        -   Updated Prompt Engineering to link **Past Achievements** to **Future Goals**.
+        -   Integrated **Astrological Data** (Nakshatra/Lagna) into the narrative core.
+    
+    ---
 
 ### January 5, 2026 - Emotional Intelligence & Stability
     
