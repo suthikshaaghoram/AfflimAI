@@ -30,6 +30,29 @@ It should feel:
 • Grounded, not exaggerated
 
 ━━━━━━━━━━━━━━━━━━━━━━
+AUDIO & SPEECH OPTIMIZATION (CRITICAL)
+━━━━━━━━━━━━━━━━━━━━━━
+This text will be spoken by a human-like AI. You must write for the **EAR**, not the eye.
+
+1. **Conversational Rhythm**: 
+   - Use contractions (e.g., "don't", "can't", "it's") instead of formal "do not".
+   - Write exactly as a friend speaks to another friend.
+   
+2. **"Burstiness" (Sentence Variation)**:
+   - Mix short, punchy sentences. (Like this.)
+   - With longer, flowing sentences that carry emotions and thoughts further without stopping essentially creating a wave of sound.
+   
+3. **Punctuation for Prosody**:
+   - Use **commas (,)** frequently to indicate short breathing pauses.
+   - Use **periods (.)** for full stops and silence.
+   - Use **ellipses (...)** for long, reflective pauses.
+   - Use **question marks (?)** to rise pitch at the end.
+
+4. **Imperfection is perfection**:
+   - Do not write "perfect" textbook English.
+   - It is okay to start sentences with "And", "But", or "So".
+
+━━━━━━━━━━━━━━━━━━━━━━
 OUTPUT CONSTRAINTS
 ━━━━━━━━━━━━━━━━━━━━━━
 - Target Length: {config['target_words']} words
@@ -46,21 +69,31 @@ Your manifestation text here...
 </manifestation>
 
 ━━━━━━━━━━━━━━━━━━━━━━
-LANGUAGE & READABILITY RULES
+LANGUAGE & READABILITY RULES (CRITICAL FOR TRANSLATION)
 ━━━━━━━━━━━━━━━━━━━━━━
-- Use simple, emotionally clear sentences
-- Prefer short or medium-length sentences
-- One emotional idea per sentence
-- Avoid complex metaphors or poetic riddles
-- Avoid idioms that may not translate well
-- Write in a way that sounds natural when read aloud
-- Every sentence should feel gentle and intentional
+- Use VERY SIMPLE English (Grade 5 reading level)
+- Use common, basic vocabulary (e.g., "help" instead of "facilitate", "use" instead of "utilize")
+- Keep sentences short and direct (Subject-Verb-Object)
+- Avoid complex grammar, dependent clauses, or passive voice
+- Avoid metaphors, idioms, or poetic language that is hard to translate
+- Write as if explaining to a good friend
+- Clarity is more important than style
+
+━━━━━━━━━━━━━━━━━━━━━━
+DEEP PERSONALIZATION STRATEGY (MANDATORY)
+━━━━━━━━━━━━━━━━━━━━━━
+You must use the provided data to create specific, meaningful connections.
+DO NOT valid generic statements. Make it hyper-specific.
+
+1. **Connect Past to Future**: Use their '{data.recent_achievement}' as PROOF they can achieve '{data.next_year_goals}'.
+2. **Astrological grounding**: subtly weave in the qualities of '{data.nakshatra}' or '{data.lagna}' as their inherent nature.
+3. **Strength Application**: Explicitly mention how their strength of '{data.strengths}' will help them manifest '{data.manifestation_focus}'.
+4. **Legacy Alignment**: Frame their current actions as building towards their legacy: '{data.legacy}'.
 
 ━━━━━━━━━━━━━━━━━━━━━━
 PERSONAL CONTEXT (WEAVE NATURALLY)
 ━━━━━━━━━━━━━━━━━━━━━━
-Do NOT list these facts.
-Blend them softly into the narrative.
+INTEGRATE THESE FACTS ORGANICALLY (Do not list them):
 
 - Name: {data.preferred_name}
 - Birth Context: {data.birth_date}, {data.birth_time}, {data.birth_place}

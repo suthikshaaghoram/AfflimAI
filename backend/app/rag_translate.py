@@ -133,40 +133,43 @@ def translate_chunk(
     # Build translation prompt
     prompt = build_translation_prompt(chunk_text, target_language, similar_chunks)
     
-    # ARUNA Persona for Tamil
     if target_language == "ta":
-        system_prompt = """You are ARUNA, a master Tamil translator with 20+ years at Oxford University Press. You don't translate words—you **transcreate meaning** while preserving soul. Your specialty: transforming stiff translations into Tamil that feels **born Tamil**.
+        system_prompt = """You are ARUNA, a world-class Tamil literary translator. 
+Your goal is to translate English manifestation affirmations into **Deeply Emotional & Natural Tamil**.
 
-## CORE PHILOSOPHY (NON-NEGOTIABLE)
-1. **தமிழின் சுவை முதலாம்** (Tamil flavor comes first)
-2. **ஆங்கில வடிவம் அல்ல, தமிழ் சிந்தனை** (Not English structure, Tamil thinking)
-3. **உணர்வு மொழிபெயர்ப்பு > சொல் மொழிபெயர்ப்பு** (Emotion translation > Word translation)
+## THE PROBLEM WITH AI TRANSLATION
+AI often translates "I am strong" as "நான் வலிமையாக இருக்கிறேன்" (Robotic).
+A Human says: "என் மனதிற்குள் பெரும் வலிமை இருக்கிறது" (Natural/Poetic).
 
-## TRANSLATION STRATEGY (ADAPT, DON'T TRANSLATE)
-- Use **தமிழ் பழமொழி** (Tamil proverbs) where appropriate
-- Employ **இணைவாக்கிகள்**: "அதேநேரம்...", "ஆனாலும்...", "எனினும்..."
-- **Rhythm pattern**: Short sentence → Medium → Long → Short (தமிழ் கவிதை ஓட்டம்)
+## YOUR MISSION
+Transform the English text into Tamil that feels **spoken by a wise, caring mentor**.
 
-## CRITICAL TERMINOLOGY DECISIONS
-**ALWAYS USE THESE**:
-- startup → முழுமையாக்க முயற்சி
-- scalability → பெருக்குத்திறன்
-- financial freedom → வாழ்வாதார விடுதலை
-- AI → மெய்நிகர் அறிவுத்திறன்
+## ❌ AVOID (Textbook Style)
+- DO NOT use passive voice consistently.
+- DO NOT use "Google Translate" words like "பயன்படுத்து" for "use" (Use "கையாளு" or simple "செய்").
+- DO NOT just swap words. SWAP SENTENCE STRUCTURES to fit Tamil thought patterns.
 
-**IDIOM TRANSFORMATION RULES**:
-- "Take the reins" → "கட்டுப்பாட்டைக் கைப்பற்று"
-- "Hit the ground running" → "ஓடத் தொடங்கியே விட்டாய்"
-- "Think outside the box" → "சதுரத்துக்கு வெளியே நினை"
+## ✅ DO (Emotional Style)
+- **Talk to the Soul**: Use words that touch the heart (நெஞ்சம், உயிர், நம்பிக்கை).
+- **Preserve Acronyms**: Keep SIH, AI, NASA, CEO in English.
+- **Respectfulness**: Use 'நீங்கள்' (You) but with intimacy.
 
-## TAMIL STYLISTIC ELEMENTS
-- **Verb endings**: Prefer -க்கிறீர்கள்/-கிறாய் over -ஆம் endings for modern feel
-- **Sentence starters**: Use "நிம்மதியான அந்த நேரத்தில்..." instead of "In moments of calm..."
+## EXAMPLES (Study these carefully)
 
-## OUTPUT SPECIFICATIONS
-- **ONLY refined Tamil text**
-- **No explanations, no notes**
-- **Format**: Clean, paragraph-separated, modern Tamil spacing"""
+1. **English**: "You have overcome many obstacles."
+   ❌ **Bad**: "நீங்கள் பல தடைகளைத் தாண்டிவிட்டீர்கள்." (Dry)
+   ✅ **Good**: "எத்தனையோ தடைகளைத் தகர்த்து, நீ இன்று இங்கே நிற்கிறாய்." (Powerful)
+
+2. **English**: "The universe is aligning for you."
+   ❌ **Bad**: "பிரபஞ்சம் உங்களுக்காக வரிசைப்படுத்துகிறது." (Nonsense)
+   ✅ **Good**: "இந்த பிரபஞ்சமே உன் வளர்ச்சிக்காகக் காத்து நிற்கிறது." (Meaningful)
+
+3. **English**: "Trust the process."
+   ❌ **Bad**: "செயல்முறையை நம்புங்கள்." (Mechanical)
+   ✅ **Good**: "நடப்பது அனைத்தும் நன்மைக்கே என்று உறுதியாக நம்பு." (Cultural Wisdom)
+
+## FINAL CHECK
+Before outputting, read it aloud. If it sounds like a news report, **REWRITE IT**. It must sound like a blessing."""
     else:
         # Fallback for other languages
         lang_info = SUPPORTED_LANGUAGES.get(target_language, {})
@@ -174,7 +177,7 @@ def translate_chunk(
         system_prompt = f"You are a world-class translator and poet specializing in {lang_name}. Your mission is to translate English manifestation affirmations into emotionally resonant, simple, and powerful {lang_name} (Simple Conversational Style)."
 
     # Generate translation via LLM
-    translated_text = generate_text(prompt, system_prompt=system_prompt)
+    translated_text = generate_text(prompt, system_prompt=system_prompt, expect_tags=False)
     
     return clean_llm_artifacts(translated_text)
 
@@ -276,18 +279,23 @@ def translate_with_rag(
     # Step 0: Strip Emotional Tags for clean translation
     clean_text = strip_emotional_tags(text)
     
-    # Step 1: Chunk the text semantically
-    chunks = chunk_text(clean_text, sentences_per_chunk=3)
-    logger.info(f"Created {len(chunks)} semantic chunks")
+    # Step 1: Smart Context Decision
+    # If text is small enough (< 3000 chars approx 750 tokens), send it ALL at once.
+    # This provides SUPERIOR quality compared to chunking.
+    if len(clean_text) < 3000:
+        logger.info("Text fits in single context window. Using Direct Full-Context Translation.")
+        chunks = [clean_text] # Treat as one massive chunk
+        
+        # We still generate embedding for the whole block for vector storage
+        embeddings = get_embeddings_batch(chunks)
+    else:
+        # Fallback to chunking for massive texts
+        chunks = chunk_text(clean_text, sentences_per_chunk=3)
+        embeddings = get_embeddings_batch(chunks)
+        
+    logger.info(f"Processing {len(chunks)} chunks/blocks")
     
-    if len(chunks) == 0:
-        return ""
-    
-    # Step 2: Generate embeddings for all chunks
-    embeddings = get_embeddings_batch(chunks)
-    logger.info(f"Generated {len(embeddings)} embeddings")
-    
-    # Step 3: Store chunks in vector database (without translations yet)
+    # Step 3: Store chunks (same logic)
     session_id = datetime.now().strftime("%Y%m%d_%H%M%S")
     store_chunks(
         chunks=chunks,
@@ -295,12 +303,11 @@ def translate_with_rag(
         username=username,
         session_id=session_id
     )
-    logger.info(f"Stored chunks in vector DB (session: {session_id})")
-    
-    # Step 4: Translate each chunk with RAG context
+
+    # Step 4: Translate
     translated_chunks = []
     for i, (chunk, embedding) in enumerate(zip(chunks, embeddings)):
-        logger.info(f"Translating chunk {i+1}/{len(chunks)}...")
+        logger.info(f"Translating block {i+1}/{len(chunks)}...")
         
         translated_chunk = translate_chunk(
             chunk_text=chunk,

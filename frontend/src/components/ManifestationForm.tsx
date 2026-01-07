@@ -3,13 +3,23 @@ import { Button } from "@/components/ui/button";
 import { FormSection } from "@/components/FormSection";
 import { FormField } from "@/components/FormField";
 import { GenerationModeSelector } from "@/components/GenerationModeSelector";
-import { ManifestationRequest, getLastSubmission } from "@/lib/api";
-import { User, Star, Heart, Target, Sparkles, Wand2, History } from "lucide-react";
+import { ManifestationRequest, getLastSubmission, ingestProfile, summarizeProfile } from "@/lib/api";
+import { User, Star, Heart, Target, Sparkles, Wand2, History, Linkedin } from "lucide-react";
 import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 
 interface ManifestationFormProps {
   onSubmit: (data: ManifestationRequest) => void;
   isLoading: boolean;
+  initialData?: Partial<ManifestationRequest>;
 }
 
 const initialFormState: ManifestationRequest = {
@@ -29,9 +39,15 @@ const initialFormState: ManifestationRequest = {
   manifestation_focus: "",
 };
 
-export function ManifestationForm({ onSubmit, isLoading }: ManifestationFormProps) {
-  const [formData, setFormData] = useState<ManifestationRequest>(initialFormState);
+export function ManifestationForm({ onSubmit, isLoading, initialData }: ManifestationFormProps) {
+  const [formData, setFormData] = useState<ManifestationRequest>({
+    ...initialFormState,
+    ...initialData // Merge initial data if present
+  });
   const [generationMode, setGenerationMode] = useState<"quick" | "deep">("deep");
+  const [isLinkedInOpen, setIsLinkedInOpen] = useState(false);
+  const [linkedinUrl, setLinkedinUrl] = useState("");
+  const [isImporting, setIsImporting] = useState(false);
 
   const updateField = (field: keyof ManifestationRequest) => (value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -50,6 +66,37 @@ export function ManifestationForm({ onSubmit, isLoading }: ManifestationFormProp
       toast.success("✨ Form filled with your last data!");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to load previous data");
+    }
+  };
+
+  const handleLinkedInImport = async () => {
+    if (!linkedinUrl.trim()) return;
+
+    setIsImporting(true);
+    try {
+      toast.info("Connecting to LinkedIn... Please confirm login in the browser window if requested.");
+
+      // 1. Ingest
+      const ingestResult = await ingestProfile({ linkedin_url: linkedinUrl });
+      toast.info("Profile data extracted! Analysing...");
+
+      // 2. Summarize
+      const summaryResult = await summarizeProfile(ingestResult.raw_profile_text);
+
+      // 3. Update Form
+      setFormData(prev => ({
+        ...prev,
+        ...summaryResult.manifestation_data
+      }));
+
+      toast.success("✨ Profile imported successfully!");
+      setIsLinkedInOpen(false);
+      setLinkedinUrl("");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to import LinkedIn profile. Check the logs.");
+    } finally {
+      setIsImporting(false);
     }
   };
 
@@ -75,7 +122,53 @@ export function ManifestationForm({ onSubmit, isLoading }: ManifestationFormProp
             <History className="w-4 h-4" />
             Auto-fill last data
           </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setIsLinkedInOpen(true)}
+            className="text-blue-600 border-blue-200 hover:bg-blue-50 transition-colors gap-2"
+          >
+            <Linkedin className="w-4 h-4" />
+            Import from LinkedIn
+          </Button>
         </div>
+
+        <Dialog open={isLinkedInOpen} onOpenChange={setIsLinkedInOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Import from LinkedIn</DialogTitle>
+              <DialogDescription>
+                Enter your LinkedIn profile URL. We will extract your details to personalize your manifestation.
+                <br />
+                <span className="text-xs text-muted-foreground mt-2 block">
+                  ⚠️ Requires a browser window to open for secure login. Please solve any captchas if they appear.
+                </span>
+              </DialogDescription>
+            </DialogHeader>
+            <div className="py-4">
+              <Input
+                placeholder="https://www.linkedin.com/in/username"
+                value={linkedinUrl}
+                onChange={(e) => setLinkedinUrl(e.target.value)}
+              />
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsLinkedInOpen(false)} disabled={isImporting}>
+                Cancel
+              </Button>
+              <Button onClick={handleLinkedInImport} disabled={isImporting || !linkedinUrl}>
+                {isImporting ? (
+                  <>
+                    <Sparkles className="w-4 h-4 mr-2 animate-spin" /> Importing...
+                  </>
+                ) : (
+                  "Import Profile"
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
         <div className="grid sm:grid-cols-2 gap-5">
           <FormField
             label="Preferred Name"

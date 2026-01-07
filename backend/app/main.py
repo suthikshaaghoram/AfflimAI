@@ -1,4 +1,9 @@
 from fastapi import FastAPI
+from dotenv import load_dotenv
+import os
+
+# Load environment variables
+load_dotenv()
 from fastapi.middleware.cors import CORSMiddleware
 from api.v1.router import api_router
 import logging

@@ -121,6 +121,7 @@ export default function Index() {
               <ManifestationForm
                 onSubmit={handleSubmit}
                 isLoading={false}
+                initialData={location.state?.initialData}
               />
             )}
 

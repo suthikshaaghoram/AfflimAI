@@ -275,3 +275,55 @@ export async function finalizeAudio(data: FinalizeAudioRequest): Promise<AudioRe
     status: 'success'
   };
 }
+export interface ProfileParseResponse {
+  status: string;
+  raw_profile_text: string;
+  char_count: number;
+}
+
+export interface ProfileSummarizeResponse {
+  status: string;
+  manifestation_data: ManifestationRequest;
+}
+
+export async function ingestProfile(data: {
+  file?: File,
+  linkedin_url?: string,
+  github_url?: string,
+  portfolio_url?: string
+}): Promise<ProfileParseResponse> {
+  const formData = new FormData();
+  if (data.file) formData.append('file', data.file);
+  if (data.linkedin_url) formData.append('linkedin_url', data.linkedin_url);
+  if (data.github_url) formData.append('github_url', data.github_url);
+  if (data.portfolio_url) formData.append('portfolio_url', data.portfolio_url);
+
+  const response = await fetch(`${API_BASE_URL}/api/v1/profile/ingest`, {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: 'Failed to ingest profile' }));
+    throw new Error(error.detail || 'Failed to ingest profile');
+  }
+
+  return response.json();
+}
+
+export async function summarizeProfile(rawText: string): Promise<ProfileSummarizeResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/profile/summarize`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ raw_profile_text: rawText }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: 'Failed to summarize profile' }));
+    throw new Error(error.detail || 'Failed to summarize profile');
+  }
+
+  return response.json();
+}
