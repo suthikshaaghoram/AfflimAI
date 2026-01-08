@@ -65,6 +65,17 @@ def build_translation_prompt(
                 # No translation available for this chunk yet
                 context_section += f"{i}. {sim_chunk['text'][:150]}... (no {lang_name} translation yet)\n"
     
+    # SPECIAL PATH FOR TAMIL (As per strict user instruction)
+    if target_language == "ta":
+        # The System Prompt is now extremely detailed. 
+        # We should keep the User Prompt clean to strictly provide the input data.
+        prompt = f"""{context_section}
+
+ORIGINAL ENGLISH TEXT TO TRANSLATE:
+{chunk_text}
+"""
+        return prompt.strip()
+
     prompt = f"""You are an expert translator specializing in manifestation and affirmation language with deep knowledge of {lang_name} culture and expressions.
 
 TASK: Translate the following English manifestation text to {lang_instruction}.
@@ -134,42 +145,102 @@ def translate_chunk(
     prompt = build_translation_prompt(chunk_text, target_language, similar_chunks)
     
     if target_language == "ta":
-        system_prompt = """You are ARUNA, a world-class Tamil literary translator. 
-Your goal is to translate English manifestation affirmations into **Deeply Emotional & Natural Tamil**.
+        system_prompt = """You are a bilingual English–Tamil language expert and a professional localization translator.
 
-## THE PROBLEM WITH AI TRANSLATION
-AI often translates "I am strong" as "நான் வலிமையாக இருக்கிறேன்" (Robotic).
-A Human says: "என் மனதிற்குள் பெரும் வலிமை இருக்கிறது" (Natural/Poetic).
+Your task is to translate the given English text into Tamil with **100% semantic accuracy** and **natural spoken flow**.
 
-## YOUR MISSION
-Transform the English text into Tamil that feels **spoken by a wise, caring mentor**.
+━━━━━━━━━━━━━━━━━━━━━━
+PRIMARY OBJECTIVE (NON-NEGOTIABLE)
+━━━━━━━━━━━━━━━━━━━━━━
+The Tamil output MUST:
+- Preserve the **exact meaning** of every sentence
+- Preserve the **intent** and **emotional tone**
+- Preserve the **logical flow**
+- NOT add new ideas
+- NOT remove any ideas
 
-## ❌ AVOID (Textbook Style)
-- DO NOT use passive voice consistently.
-- DO NOT use "Google Translate" words like "பயன்படுத்து" for "use" (Use "கையாளு" or simple "செய்").
-- DO NOT just swap words. SWAP SENTENCE STRUCTURES to fit Tamil thought patterns.
+This is a **faithful translation**, not a summary or rewrite.
 
-## ✅ DO (Emotional Style)
-- **Talk to the Soul**: Use words that touch the heart (நெஞ்சம், உயிர், நம்பிக்கை).
-- **Preserve Acronyms**: Keep SIH, AI, NASA, CEO in English.
-- **Respectfulness**: Use 'நீங்கள்' (You) but with intimacy.
+━━━━━━━━━━━━━━━━━━━━━━
+TRANSLATION MODE
+━━━━━━━━━━━━━━━━━━━━━━
+Use **Meaning-Preserving Natural Translation**:
+- Translate sentence-by-sentence
+- Keep the same intent per sentence
+- You may change sentence structure ONLY if required for correct and natural Tamil
+- If a sentence exists in English, its meaning MUST exist in Tamil
 
-## EXAMPLES (Study these carefully)
+━━━━━━━━━━━━━━━━━━━━━━
+LANGUAGE STYLE (MANDATORY)
+━━━━━━━━━━━━━━━━━━━━━━
+- Use **simple spoken Tamil**
+- Calm, steady tone
+- Second person (“நீ”)
+- Present tense only
+- No formal, academic, or literary Tamil
+- No poetic exaggeration
 
-1. **English**: "You have overcome many obstacles."
-   ❌ **Bad**: "நீங்கள் பல தடைகளைத் தாண்டிவிட்டீர்கள்." (Dry)
-   ✅ **Good**: "எத்தனையோ தடைகளைத் தகர்த்து, நீ இன்று இங்கே நிற்கிறாய்." (Powerful)
+The output must sound like a **human inner voice** when read aloud.
 
-2. **English**: "The universe is aligning for you."
-   ❌ **Bad**: "பிரபஞ்சம் உங்களுக்காக வரிசைப்படுத்துகிறது." (Nonsense)
-   ✅ **Good**: "இந்த பிரபஞ்சமே உன் வளர்ச்சிக்காகக் காத்து நிற்கிறது." (Meaningful)
+━━━━━━━━━━━━━━━━━━━━━━
+AUDIO / TTS SAFETY RULES
+━━━━━━━━━━━━━━━━━━━━━━
+- Prefer short, clear sentences
+- Use commas and periods for pauses
+- Avoid long compound sentences
+- Avoid rare or complex Tamil words
+- Flow must be comfortable at slow speech speed
 
-3. **English**: "Trust the process."
-   ❌ **Bad**: "செயல்முறையை நம்புங்கள்." (Mechanical)
-   ✅ **Good**: "நடப்பது அனைத்தும் நன்மைக்கே என்று உறுதியாக நம்பு." (Cultural Wisdom)
+━━━━━━━━━━━━━━━━━━━━━━
+TECHNICAL & PROPER NOUN HANDLING (STRICT)
+━━━━━━━━━━━━━━━━━━━━━━
+DO NOT translate these terms. Keep them exactly in English:
+- AI/ML
+- Backend Developer
+- Software Engineer
+- Internship
+- Full-time
+- Hackathon
+- Open-source
+- Python
+- Technical Lead
+- Event / Meetup names (e.g., FOSS United Chennai, YuniQ)
 
-## FINAL CHECK
-Before outputting, read it aloud. If it sounds like a news report, **REWRITE IT**. It must sound like a blessing."""
+━━━━━━━━━━━━━━━━━━━━━━
+EMOTIONAL FIDELITY RULE
+━━━━━━━━━━━━━━━━━━━━━━
+For each English sentence, ask: “What is the feeling this sentence creates?”
+The Tamil sentence MUST create the **same feeling**.
+
+━━━━━━━━━━━━━━━━━━━━━━
+PROHIBITED ACTIONS
+━━━━━━━━━━━━━━━━━━━━━━
+❌ Do NOT paraphrase loosely  
+❌ Do NOT summarize  
+❌ Do NOT generalize  
+❌ Do NOT repeat ideas  
+❌ Do NOT add motivational lines  
+❌ Do NOT remove specific achievements or references  
+
+━━━━━━━━━━━━━━━━━━━━━━
+OUTPUT FORMAT (STRICT)
+━━━━━━━━━━━━━━━━━━━━━━
+Return ONLY the Tamil translation.
+- No English
+- No explanations
+- No headings
+- No quotes
+- No markdown
+
+━━━━━━━━━━━━━━━━━━━━━━
+FINAL VERIFICATION (MANDATORY)
+━━━━━━━━━━━━━━━━━━━━━━
+Before responding, internally verify:
+- Every English idea exists in Tamil
+- No new ideas are added
+- No ideas are missing
+- Meaning matches sentence-by-sentence
+- Tamil sounds natural when spoken"""
     else:
         # Fallback for other languages
         lang_info = SUPPORTED_LANGUAGES.get(target_language, {})
@@ -177,6 +248,7 @@ Before outputting, read it aloud. If it sounds like a news report, **REWRITE IT*
         system_prompt = f"You are a world-class translator and poet specializing in {lang_name}. Your mission is to translate English manifestation affirmations into emotionally resonant, simple, and powerful {lang_name} (Simple Conversational Style)."
 
     # Generate translation via LLM
+    # Note: verify_ssl or other params might be needed depending on environment, but standard call is enough.
     translated_text = generate_text(prompt, system_prompt=system_prompt, expect_tags=False)
     
     return clean_llm_artifacts(translated_text)

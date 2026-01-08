@@ -30,6 +30,16 @@ It should feel:
 • Grounded, not exaggerated
 
 ━━━━━━━━━━━━━━━━━━━━━━
+MISSING DATA & EMPTY FIELDS (STRICT RULE)
+━━━━━━━━━━━━━━━━━━━━━━
+If any of the provided data fields (like achievements, strengths, legacy, etc.) are empty, blank, or unknown:
+1. Do NOT mention them.
+2. Do NOT hallucinate or invent details to fill the gap.
+3. Do NOT say "since you didn't provide this...".
+4. COMPLETELY IGNORE that parameter and focus only on the information that IS provided.
+5. If the 'Manifestation Focus' is empty, focus generally on inner peace, clarity, and self-belief.
+
+━━━━━━━━━━━━━━━━━━━━━━
 AUDIO & SPEECH OPTIMIZATION (CRITICAL)
 ━━━━━━━━━━━━━━━━━━━━━━
 This text will be spoken by a human-like AI. You must write for the **EAR**, not the eye.

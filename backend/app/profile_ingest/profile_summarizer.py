@@ -5,34 +5,53 @@ from app.schemas import ManifestationRequest
 
 logger = logging.getLogger(__name__)
 
-SUMMARIZATION_PROMPT = """You are an expert career profiler and psychologist. 
-Your task is to analyze a raw professional profile (e.g., from LinkedIn or GitHub) and extract specific psychological and professional insights to build a "Manifestation Profile".
+SUMMARIZATION_PROMPT = """You are an intelligent data-alignment and profile-understanding engine.
 
-INPUT PROFILE TEXT:
-{profile_text}
+Your task:
+Given RAW, UNSTRUCTURED LINKEDIN-SCRAPED TEXT, extract, infer, and map the information into the predefined AfflimAI form fields.
 
-CRITICAL INSTRUCTIONS:
-1. IGNORE navigation text (e.g., "Sign In", "Skip to content", "Followers", "Repositories", "Pricing", "Patrons").
-2. Focus ONLY on the biographical and professional description found in the text.
-3. If the text only contains navigation links or generic platform messages, return generic positive placeholders instead of hallucinating specific companies or roles.
-4. BE CONCISE. 1-2 sentences maximum per field.
+CRITICAL RULES (NON-NEGOTIABLE):
+1. **NO PRONOUNS**: Do NOT use "I", "Me", "My", "We", "Our", or "You".
+2. **OBJECTIVE STYLE**: Start sentences directly with the action verb or noun.
+3. **EXTREMELY CONCISE**:
+   - MAX 8 WORDS per text field.
+   - MAX 3 ITEMS for list fields (comma-separated).
+4. NEVER hallucinate or guess private or astrological data.
+5. If a field is not explicitly or reasonably inferable, return null.
 
-TASK:
-Extract/Infer the following fields based on the profile content.
-Return the result as a STRICT JSON object.
+-----------------------------------
+FIELDS TO POPULATE
+-----------------------------------
 
-FIELDS TO EXTRACT:
-1. "preferred_name": The user's full name or preferred name found in the profile.
-2. "strengths": Key professional and soft skills (comma separated).
-3. "areas_of_improvement": Potential growth areas based on career gaps or typical challenges in their role (infer if not explicit).
-4. "greatest_achievement": The most significant role, project, or award found.
-5. "recent_achievement": A recent position or accomplishment (last 1-2 years).
-6. "next_year_goals": Logical next career step (e.g., Promotion to Senior X, Leading a team).
-7. "life_goals": Long-term career trajectory logic (e.g., "Become a C-level executive", "Start a consultancy").
-8. "legacy": What professional impact they seem to be building towards.
-9. "manifestation_focus": A high-level theme for their career right now (e.g., "Leadership and Impact", "Financial Abundance", "Creative Freedom").
+Personal Details:
+- preferred_name (string | null) -> Extract first name only.
 
-JSON OUTPUT STRUCTURE:
+Vedic Astrology Context:
+- nakshatra_with_pada (null only) -> Always null
+- lagna_ascendant (null only) -> Always null
+- birth_place (null only) -> Always null
+- birth_date (null only) -> Always null
+- birth_time (null only) -> Always null
+
+Personal Profile (STRICT: MAX 8 WORDS / 3 ITEMS):
+- strengths (string | null) -> Top 3 skills only (e.g., "Leadership, Python, Strategic Planning").
+- areas_of_growth (string | null) -> Top 1 focus (e.g., "Expanding AI knowledge").
+- greatest_achievement (string | null) -> The single most impressive feat (e.g., "Led team to launch Global App").
+- recent_win (string | null) -> One specific recent milestone (e.g., "Completed Data Science Certification").
+
+Dreams & Vision (STRICT: MAX 8 WORDS):
+- next_year_goals (string | null) -> One main objective (e.g., "Secure Senior Engineer role").
+- life_goals_with_timeline (string | null) -> Ultimate career/life aim (e.g., "Become CTO of tech firm").
+- legacy (string | null) -> Core impact statement (e.g., "Empowering women in tech").
+- manifestation_focus (string | null) -> 2-4 word theme (e.g., "Global Impact Leader").
+
+-----------------------------------
+OUTPUT FORMAT (STRICT)
+-----------------------------------
+
+Return ONLY valid JSON.
+Do NOT include explanations or markdown.
+JSON Structure:
 {{
     "preferred_name": "...",
     "strengths": "...",
@@ -45,7 +64,10 @@ JSON OUTPUT STRUCTURE:
     "manifestation_focus": "..."
 }}
 
-Ensure the tone is professional, encouraging, and accurate to the input.
+-----------------------------------
+INPUT
+-----------------------------------
+{profile_text}
 """
 
 def summarize_profile(profile_text: str) -> dict:

@@ -1,13 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
-import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { Play, Pause, Download, Volume2, Music, Sparkles, Upload, RotateCcw } from "lucide-react";
-import { getBackgroundTracks, uploadBackgroundTrack, BackgroundTrack } from "@/lib/api";
-import { toast } from "sonner";
+import { Play, Pause, Download, Volume2 } from "lucide-react";
+import { BackgroundTrack } from "@/lib/api";
 
 interface AudioPlayerProps {
   audioUrl: string;
@@ -25,6 +21,9 @@ interface AudioPlayerProps {
   isBgEnabled: boolean;
   onBgEnabledChange: (enabled: boolean) => void;
 
+  // New Prop: Tracks passed from parent
+  backgroundTracks: BackgroundTrack[];
+
   isFinalized?: boolean; // If true, disables mixing controls
 }
 
@@ -36,9 +35,8 @@ export function AudioPlayer({
   bgVolume,
   onBgVolumeChange,
   selectedBgTrackId,
-  onBgTrackIdChange,
   isBgEnabled,
-  onBgEnabledChange,
+  backgroundTracks,
   isFinalized = false
 }: AudioPlayerProps) {
   // --- Refs for Web Audio API ---
@@ -62,31 +60,7 @@ export function AudioPlayer({
   const [playbackRate, setPlaybackRate] = useState(1);
   const [showSpeedMenu, setShowSpeedMenu] = useState(false);
 
-  // Background Audio Data
-  const [backgroundTracks, setBackgroundTracks] = useState<BackgroundTrack[]>([]);
-  const [isUploading, setIsUploading] = useState(false);
-
   // --- Initialization ---
-
-  // Fetch Background Tracks
-  useEffect(() => {
-    const fetchTracks = async () => {
-      try {
-        const tracks = await getBackgroundTracks();
-        setBackgroundTracks(tracks);
-        if (!selectedBgTrackId) {
-          const defaultTrack = tracks.find(t => t.is_default);
-          if (defaultTrack) {
-            onBgTrackIdChange(defaultTrack.id);
-          }
-        }
-      } catch (error) {
-        console.error("Failed to load background tracks", error);
-        toast.error("Could not load background music");
-      }
-    };
-    fetchTracks();
-  }, []);
 
   // Initialize Audio Context and Nodes
   useEffect(() => {
@@ -156,8 +130,6 @@ export function AudioPlayer({
   }, [audioUrl]);
 
   const bgFadeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  // --- Localization removed for brevity, keeping existing ---
 
   // Loop for background track changing...
   useEffect(() => {
@@ -231,9 +203,6 @@ export function AudioPlayer({
     bgFadeTimeoutRef.current = setTimeout(() => {
       if (bgElementRef.current) {
         bgElementRef.current.pause();
-        // Reset current time logic? Loop usually handles this, maybe keep it running if we want seamless resume? 
-        // Better to pause to save resources.
-        // bgElementRef.current.currentTime = 0; // Don't reset time so it resumes naturally
       }
     }, 1500);
   };
@@ -247,9 +216,6 @@ export function AudioPlayer({
 
     if (isPlaying) {
       voiceElementRef.current.pause();
-      // bgElementRef.current.pause(); // Let fadeOut handle it if we want smooth stop, or instant?
-      // For main pause, usually instant or quick fade.
-      // Let's pause background immediately to sync with voice
       bgElementRef.current.pause();
       if (bgFadeTimeoutRef.current) clearTimeout(bgFadeTimeoutRef.current);
 
@@ -291,28 +257,6 @@ export function AudioPlayer({
     setShowSpeedMenu(false);
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (file.size > 10 * 1024 * 1024) { toast.error("File size must be less than 10MB"); return; }
-
-    setIsUploading(true);
-    try {
-      const newTrack = await uploadBackgroundTrack(file);
-      setBackgroundTracks(prev => [...prev, newTrack]);
-      onBgTrackIdChange(newTrack.id);
-      toast.success("Background track uploaded!");
-
-      if (isBgEnabled && isPlaying && bgElementRef.current) {
-        bgElementRef.current.src = newTrack.url;
-        bgElementRef.current.play();
-      }
-    } catch (error) {
-      console.error("Upload error", error);
-      toast.error("Failed to upload track");
-    } finally { setIsUploading(false); }
-  };
-
   const formatTime = (time: number) => {
     if (!time || isNaN(time)) return "0:00";
     const minutes = Math.floor(time / 60);
@@ -330,23 +274,23 @@ export function AudioPlayer({
   };
 
   return (
-    <div className={cn("relative mt-6 rounded-3xl overflow-hidden bg-white/5 border border-white/10 backdrop-blur-md shadow-xl transition-all duration-300",
+    <div className={cn("relative rounded-3xl overflow-hidden bg-white/5 border border-white/10 backdrop-blur-md shadow-xl transition-all duration-300",
       className,
       isFinalized && "border-sunrise-gold/30 shadow-sunrise-gold/10"
     )}>
       {/* Main Audio Player Section */}
-      <div className="p-6 md:p-8 bg-gradient-to-br from-indigo-900/40 via-purple-900/40 to-indigo-900/40">
+      <div className="p-6 md:p-8 bg-gradient-to-br from-mystic-dark via-mystic-violet to-mystic-dark text-white">
 
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-full bg-indigo-500/20 flex items-center justify-center">
-            <Volume2 className="w-5 h-5 text-indigo-200" />
+          <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
+            <Volume2 className="w-5 h-5 text-indigo-300" />
           </div>
           <div>
             <span className="font-display text-lg font-medium text-white block">
               {isFinalized ? "Personalized Manifestation" : "Manifestation Audio"}
             </span>
-            <span className="text-sm text-indigo-200/70">
+            <span className="text-sm text-indigo-200/80">
               {isFinalized ? "Ready for deep absorption" : "Listen, absorb, and manifest"}
             </span>
           </div>
@@ -440,83 +384,6 @@ export function AudioPlayer({
             <span className="text-[10px] text-indigo-200 w-6 text-right">{voiceVolume}%</span>
           </div>
         )}
-      </div>
-
-      {/* Background Audio Settings Section */}
-      <div className={cn("px-6 py-5 bg-black/20 border-t border-white/5", isFinalized && "opacity-50 pointer-events-none")}>
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2 text-white">
-            <Music className="w-4 h-4 text-purple-400" />
-            <span className="text-sm font-medium">Background Music</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className={cn("text-xs font-medium transition-colors", isBgEnabled ? "text-purple-300" : "text-gray-500")}>
-              {isBgEnabled ? "On" : "Off"}
-            </span>
-            <Switch
-              checked={isBgEnabled}
-              onCheckedChange={onBgEnabledChange}
-              disabled={isFinalized}
-              className="data-[state=checked]:bg-sunrise-orange"
-            />
-          </div>
-        </div>
-
-        <div className={cn("space-y-5 transition-all duration-300", isBgEnabled ? "opacity-100" : "opacity-40 pointer-events-none")}>
-          {/* Track Selector & Upload */}
-          <div className="flex gap-2">
-            <div className="flex-1">
-              <Select value={selectedBgTrackId} onValueChange={onBgTrackIdChange} disabled={isFinalized}>
-                <SelectTrigger className="w-full text-xs h-9 bg-white/5 border-white/10 text-white focus:ring-purple-500/50">
-                  <SelectValue placeholder="Select music" />
-                </SelectTrigger>
-                <SelectContent className="bg-gray-900 border-white/10 text-white">
-                  {backgroundTracks.map(track => (
-                    <SelectItem key={track.id} value={track.id} className="text-xs py-2 focus:bg-white/10 focus:text-white">
-                      {track.display_name} {track.is_default && "(Recommended)"}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="relative">
-              <input type="file" id="bg-upload" accept=".mp3,.wav" className="hidden" onChange={handleFileUpload} disabled={isUploading || isFinalized} />
-              <Label
-                htmlFor="bg-upload"
-                className={cn(
-                  "h-9 px-3 flex items-center justify-center gap-2 rounded-md border border-white/10 bg-white/5 hover:bg-white/10 text-xs text-white cursor-pointer transition-colors",
-                  isUploading && "opacity-50 cursor-wait",
-                  isFinalized && "opacity-50 cursor-not-allowed"
-                )}
-              >
-                {isUploading ? <RotateCcw className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3" />}
-                Upload
-              </Label>
-            </div>
-          </div>
-
-          {/* Volume Slider */}
-          <div>
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-xs text-gray-400">Intensity</span>
-              <span className="text-xs text-purple-300 font-medium">{bgVolume}%</span>
-            </div>
-            <Slider
-              defaultValue={[20]}
-              value={[bgVolume]}
-              max={100}
-              step={1}
-              onValueChange={(vals) => onBgVolumeChange(vals[0])}
-              disabled={isFinalized}
-              className="py-2"
-            />
-          </div>
-
-          <p className="text-[10px] text-gray-600 italic text-center">
-            {isFinalized ? "Audio is finalized. Regenerate to change settings." : "Background music is optional and does not affect the generated manifestation content"}
-          </p>
-        </div>
       </div>
     </div>
   );

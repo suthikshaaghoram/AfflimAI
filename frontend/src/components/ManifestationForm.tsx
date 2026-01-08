@@ -84,9 +84,14 @@ export function ManifestationForm({ onSubmit, isLoading, initialData }: Manifest
       const summaryResult = await summarizeProfile(ingestResult.raw_profile_text);
 
       // 3. Update Form
+      // 3. Update Form
+      const sanitizedData = Object.fromEntries(
+        Object.entries(summaryResult.manifestation_data).map(([key, value]) => [key, value ?? ""])
+      );
+
       setFormData(prev => ({
         ...prev,
-        ...summaryResult.manifestation_data
+        ...sanitizedData
       }));
 
       toast.success("✨ Profile imported successfully!");
@@ -100,7 +105,7 @@ export function ManifestationForm({ onSubmit, isLoading, initialData }: Manifest
     }
   };
 
-  const isFormValid = formData.preferred_name && formData.manifestation_focus;
+  const isFormValid = !!formData.preferred_name;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
@@ -213,22 +218,38 @@ export function ManifestationForm({ onSubmit, isLoading, initialData }: Manifest
         accentColor="gold"
       >
         <div className="grid sm:grid-cols-2 gap-5">
-          <FormField
-            label="Nakshatra with Pada"
-            name="nakshatra"
-            placeholder="e.g., Rohini 3rd Pada"
-            helperText="Your birth star and quarter"
-            value={formData.nakshatra}
-            onChange={updateField("nakshatra")}
-          />
-          <FormField
-            label="Lagna / Ascendant"
-            name="lagna"
-            placeholder="e.g., Taurus, Vrishabha"
-            helperText="Your rising sign"
-            value={formData.lagna}
-            onChange={updateField("lagna")}
-          />
+          <div className="grid sm:grid-cols-2 gap-5">
+            <FormField
+              label="Nakshatra"
+              name="nakshatra"
+              type="select"
+              placeholder="Select your birth star"
+              helperText="Your birth star"
+              value={formData.nakshatra}
+              onChange={updateField("nakshatra")}
+              options={[
+                "Ashwini", "Bharani", "Krittika", "Rohini", "Mrigashirsha", "Ardra",
+                "Punarvasu", "Pushya", "Ashlesha", "Magha", "Purva Phalguni", "Uttara Phalguni",
+                "Hasta", "Chitra", "Swati", "Vishakha", "Anuradha", "Jyeshtha",
+                "Mula", "Purva Ashadha", "Uttara Ashadha", "Shravana", "Dhanishta",
+                "Shatabhisha", "Purva Bhadrapada", "Uttara Bhadrapada", "Revati"
+              ]}
+            />
+            <FormField
+              label="Lagna / Ascendant"
+              name="lagna"
+              type="select"
+              placeholder="Select your rising sign"
+              helperText="Your rising sign"
+              value={formData.lagna}
+              onChange={updateField("lagna")}
+              options={[
+                "Aries (Mesha)", "Taurus (Vrishabha)", "Gemini (Mithuna)", "Cancer (Karka)",
+                "Leo (Simha)", "Virgo (Kanya)", "Libra (Tula)", "Scorpio (Vrishchika)",
+                "Sagittarius (Dhanu)", "Capricorn (Makara)", "Aquarius (Kumbha)", "Pisces (Meena)"
+              ]}
+            />
+          </div>
         </div>
       </FormSection>
 
@@ -320,7 +341,6 @@ export function ManifestationForm({ onSubmit, isLoading, initialData }: Manifest
           type="textarea"
           placeholder="What is the one beautiful thing you want to bring into your life right now? Dream big!"
           helperText="Be specific and heartfelt — the universe loves clarity"
-          required
           rows={4}
           value={formData.manifestation_focus}
           onChange={updateField("manifestation_focus")}

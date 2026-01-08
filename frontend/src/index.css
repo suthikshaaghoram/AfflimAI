@@ -46,23 +46,25 @@
     --sage-deep: 145 45% 40%;
     --sky-blue: 200 70% 85%;
     --warm-cream: 40 60% 97%;
-    
+    --mystic-violet: 265 85% 75%;
+    --mystic-dark: 265 60% 55%;
+
     /* Vibrant Gradients */
-    --gradient-hero: linear-gradient(135deg, 
-      hsl(340 75% 92%) 0%, 
-      hsl(25 85% 92%) 25%,
-      hsl(45 90% 94%) 50%, 
-      hsl(145 40% 92%) 75%,
-      hsl(200 60% 92%) 100%);
+    --gradient-hero: linear-gradient(135deg,
+        hsl(340 75% 92%) 0%,
+        hsl(25 85% 92%) 25%,
+        hsl(45 90% 94%) 50%,
+        hsl(145 40% 92%) 75%,
+        hsl(200 60% 92%) 100%);
     --gradient-card: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(40 50% 98%) 100%);
     --gradient-button: linear-gradient(135deg, hsl(25 90% 55%) 0%, hsl(340 70% 60%) 100%);
     --gradient-audio: linear-gradient(135deg, hsl(145 45% 45%) 0%, hsl(160 50% 35%) 100%);
     --gradient-glow: radial-gradient(circle, hsl(45 90% 70% / 0.4) 0%, transparent 70%);
-    --gradient-sunrise: linear-gradient(180deg, 
-      hsl(340 75% 90%) 0%, 
-      hsl(25 85% 85%) 30%, 
-      hsl(45 90% 80%) 60%, 
-      hsl(40 60% 97%) 100%);
+    --gradient-sunrise: linear-gradient(180deg,
+        hsl(340 75% 90%) 0%,
+        hsl(25 85% 85%) 30%,
+        hsl(45 90% 80%) 60%,
+        hsl(40 60% 97%) 100%);
 
     /* Shadows */
     --shadow-soft: 0 4px 24px -6px hsl(25 80% 50% / 0.15);
@@ -120,11 +122,13 @@
     --sage-green: 145 30% 35%;
     --sage-deep: 145 40% 50%;
     --sky-blue: 200 50% 35%;
+    --mystic-violet: 265 60% 65%;
+    --mystic-dark: 265 50% 35%;
 
-    --gradient-hero: linear-gradient(135deg, 
-      hsl(340 40% 15%) 0%, 
-      hsl(25 50% 12%) 50%,
-      hsl(25 20% 8%) 100%);
+    --gradient-hero: linear-gradient(135deg,
+        hsl(340 40% 15%) 0%,
+        hsl(25 50% 12%) 50%,
+        hsl(25 20% 8%) 100%);
     --gradient-card: linear-gradient(180deg, hsl(25 18% 14%) 0%, hsl(25 18% 10%) 100%);
     --gradient-button: linear-gradient(135deg, hsl(25 85% 55%) 0%, hsl(340 65% 50%) 100%);
     --gradient-audio: linear-gradient(135deg, hsl(145 40% 40%) 0%, hsl(160 45% 30%) 100%);
@@ -145,7 +149,12 @@
     font-family: var(--font-body);
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: var(--font-display);
   }
 }
@@ -202,31 +211,41 @@
   }
 
   @keyframes float {
-    0%, 100% {
+
+    0%,
+    100% {
       transform: translateY(0) rotate(0deg);
     }
+
     50% {
       transform: translateY(-20px) rotate(3deg);
     }
   }
 
   @keyframes float-slow {
-    0%, 100% {
+
+    0%,
+    100% {
       transform: translateY(0) translateX(0);
     }
+
     33% {
       transform: translateY(-15px) translateX(10px);
     }
+
     66% {
       transform: translateY(-5px) translateX(-10px);
     }
   }
 
   @keyframes pulse-soft {
-    0%, 100% {
+
+    0%,
+    100% {
       opacity: 0.6;
       transform: scale(1);
     }
+
     50% {
       opacity: 1;
       transform: scale(1.05);
@@ -234,10 +253,13 @@
   }
 
   @keyframes breathe {
-    0%, 100% {
+
+    0%,
+    100% {
       transform: scale(1);
       opacity: 0.7;
     }
+
     50% {
       transform: scale(1.1);
       opacity: 1;
@@ -249,6 +271,7 @@
       opacity: 0;
       transform: translateY(30px);
     }
+
     to {
       opacity: 1;
       transform: translateY(0);
@@ -259,16 +282,20 @@
     0% {
       background-position: -200% 0;
     }
+
     100% {
       background-position: 200% 0;
     }
   }
 
   @keyframes sparkle {
-    0%, 100% {
+
+    0%,
+    100% {
       opacity: 0;
       transform: scale(0) rotate(0deg);
     }
+
     50% {
       opacity: 1;
       transform: scale(1) rotate(180deg);
@@ -276,10 +303,13 @@
   }
 
   @keyframes twinkle {
-    0%, 100% {
+
+    0%,
+    100% {
       opacity: 0.3;
       transform: scale(0.8);
     }
+
     50% {
       opacity: 1;
       transform: scale(1.2);
@@ -287,27 +317,36 @@
   }
 
   @keyframes gradient-shift {
-    0%, 100% {
+
+    0%,
+    100% {
       background-position: 0% 50%;
     }
+
     50% {
       background-position: 100% 50%;
     }
   }
 
   @keyframes bounce-gentle {
-    0%, 100% {
+
+    0%,
+    100% {
       transform: translateY(0);
     }
+
     50% {
       transform: translateY(-8px);
     }
   }
 
   @keyframes wave {
-    0%, 100% {
+
+    0%,
+    100% {
       transform: rotate(-3deg);
     }
+
     50% {
       transform: rotate(3deg);
     }
@@ -334,12 +373,10 @@
   }
 
   .animate-shimmer {
-    background: linear-gradient(
-      90deg,
-      hsl(var(--muted)) 25%,
-      hsl(45 90% 85%) 50%,
-      hsl(var(--muted)) 75%
-    );
+    background: linear-gradient(90deg,
+        hsl(var(--muted)) 25%,
+        hsl(45 90% 85%) 50%,
+        hsl(var(--muted)) 75%);
     background-size: 200% 100%;
     animation: shimmer 2s infinite;
   }

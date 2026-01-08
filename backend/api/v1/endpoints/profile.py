@@ -46,6 +46,12 @@ async def ingest_profile_content(
                 # Run scraper (handles session & headless logic internally)
                 linkedin_text = await scraper.scrape_profile(linkedin_url)
                 if linkedin_text:
+                    print("\n\n" + "="*50)
+                    print("LINKEDIN SCRAPED DATA (Live Terminal View)")
+                    print("="*50)
+                    print(linkedin_text)
+                    print("="*50 + "\n\n")
+                    
                     combined_text.append(f"--- SOURCE: LINKEDIN SCRAPER ---\n{linkedin_text}")
                     sources.append("linkedin_scraper")
             except Exception as e:
@@ -116,3 +122,21 @@ async def summarize_profile_content(request: ProfileSummarizeRequest):
     except Exception as e:
         logger.error(f"Summarization error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/view-scraped-data", summary="View raw scraped LinkedIn data")
+async def view_scraped_data():
+    """
+    Returns the raw text from the last successful LinkedIn scrape.
+    Useful for debugging verification.
+    """
+    import os
+    from fastapi.responses import PlainTextResponse
+    
+    file_path = "outputs/last_linkedin_scrape.txt"
+    if not os.path.exists(file_path):
+        return PlainTextResponse("No scraped data found yet. Run an ingestion first.", status_code=404)
+        
+    with open(file_path, "r", encoding="utf-8") as f:
+        content = f.read()
+        
+    return PlainTextResponse(content)

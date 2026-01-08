@@ -67,6 +67,10 @@ export default {
         sky: {
           blue: "hsl(var(--sky-blue))",
         },
+        mystic: {
+          violet: "hsl(var(--mystic-violet))",
+          dark: "hsl(var(--mystic-dark))",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",

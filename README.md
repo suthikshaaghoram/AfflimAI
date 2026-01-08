@@ -65,10 +65,15 @@ AfflimAI combines four powerful domains:
 - ✅ **Emotional Tags**: Control voice emotion with `[whisper]`, `[pause]`, `[smile]`
 - ✅ **Auto-Fill**: Quick form filling with last submission data
 
+### User Experience Enhancements ⭐ NEW
+- ✅ **Flexible Manifestation**: Generate with just a name! All other fields are optional.
+- ✅ **"Mystic" UI Theme**: Premium purple/violet aesthetic for deep immersion.
+- ✅ **Smart Inputs**: Vedic Astrology dropdowns for accurate data entry.
+
 ### Performance Features
 - ✅ **Embedding Cache**: 90% faster repeat translations
 - ✅ **Persistent Storage**: Saves manifestations and translations
-- ✅ **Modern UI**: Beautiful, responsive interface
+- ✅ **Modern UI**: Beautiful, responsive interface with specific "Mystic" tokens
 
 ---
 

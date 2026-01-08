@@ -61,7 +61,8 @@ export async function generateManifestation(data: ManifestationRequest): Promise
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({ detail: 'Failed to generate manifestation' }));
-    throw new Error(error.detail || 'Failed to generate manifestation');
+    const errorMessage = typeof error.detail === 'object' ? JSON.stringify(error.detail) : (error.detail || 'Failed to generate manifestation');
+    throw new Error(errorMessage);
   }
 
   return response.json();
@@ -80,7 +81,8 @@ export async function getLastSubmission(): Promise<ManifestationRequest> {
       throw new Error('No previous submission found');
     }
     const error = await response.json().catch(() => ({ detail: 'Failed to fetch last submission' }));
-    throw new Error(error.detail || 'Failed to fetch last submission');
+    const errorMessage = typeof error.detail === 'object' ? JSON.stringify(error.detail) : (error.detail || 'Failed to fetch last submission');
+    throw new Error(errorMessage);
   }
 
   return response.json();
@@ -227,7 +229,8 @@ export async function translateManifestation(data: TranslationRequest): Promise<
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({ detail: 'Failed to translate manifestation' }));
-    throw new Error(error.detail || 'Failed to translate manifestation');
+    const errorMessage = typeof error.detail === 'object' ? JSON.stringify(error.detail) : (error.detail || 'Failed to translate manifestation');
+    throw new Error(errorMessage);
   }
 
   return response.json();
@@ -305,7 +308,8 @@ export async function ingestProfile(data: {
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({ detail: 'Failed to ingest profile' }));
-    throw new Error(error.detail || 'Failed to ingest profile');
+    const errorMessage = typeof error.detail === 'object' ? JSON.stringify(error.detail) : (error.detail || 'Failed to ingest profile');
+    throw new Error(errorMessage);
   }
 
   return response.json();
@@ -322,7 +326,8 @@ export async function summarizeProfile(rawText: string): Promise<ProfileSummariz
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({ detail: 'Failed to summarize profile' }));
-    throw new Error(error.detail || 'Failed to summarize profile');
+    const errorMessage = typeof error.detail === 'object' ? JSON.stringify(error.detail) : (error.detail || 'Failed to summarize profile');
+    throw new Error(errorMessage);
   }
 
   return response.json();

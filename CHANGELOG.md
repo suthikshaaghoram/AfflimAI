@@ -12,6 +12,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.1.0] - 2026-01-08
+
+### Changed - January 8, 2026
+
+#### 🎨 UI Evolution: "Mystic" Audio Experience
+- **Complete Re-design**: Audio Page now features a modern 2-column layout (Settings vs Player)
+- **Deep Personalization**: Updated color palette with "Mystic" tokens (`mystic-violet`, `mystic-dark`) for a premium, ethereal feel.
+- **Improved Player**: Separated Background Music controls into a dedicated card for better usability.
+
+#### 📝 Form Experience
+- **Flexible Inputs**: Made all fields **OPTIONAL** except for "Preferred Name".
+- **Smart Validation**: Validates only the name, allowing for instant, low-friction generation.
+- **Smart Dropdowns**: Replaced text inputs with intelligent dropdowns for Nakshatra (27 stars) and Lagna (12 signs).
+
+#### 🧠 Backend Intelligence
+- **Prompt Logic**: Updated LLM prompts to **strictly ignore empty fields**.
+- **Anti-Hallucination**: The AI now silently adapts to missing data instead of inventing details or complaining about it.
+
+---
+
 ## [1.0.0] - 2026-01-01
 
 ### Added - January 1, 2026

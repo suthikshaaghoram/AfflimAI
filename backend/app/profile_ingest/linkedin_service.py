@@ -313,6 +313,15 @@ class LinkedInScraper:
 
                 # 8. Extract
                 text = await self._extract_main_content(page)
+                
+                # Debug Save
+                try:
+                    os.makedirs("outputs", exist_ok=True)
+                    with open("outputs/last_linkedin_scrape.txt", "w", encoding="utf-8") as f:
+                        f.write(text)
+                except Exception as e:
+                    logger.warning(f"Failed to save debug crawl file: {e}")
+                    
                 return text
 
             except Exception as e:
