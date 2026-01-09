@@ -15,3 +15,4 @@ playwright-stealth
 gunicorn
 geopy
 timezonefinder
+python-multipart
