@@ -218,6 +218,40 @@ export async function getSupportedLanguages(): Promise<SupportedLanguagesRespons
   return response.json();
 }
 
+export interface VedicRequest {
+  birthDate: string;
+  birthTime: string;
+  birthPlace: string;
+}
+
+export interface VedicResponse {
+  nakshatra: string;
+  lagna: string;
+  rasi?: string;
+  status: string;
+}
+
+export async function getVedicContext(data: VedicRequest): Promise<VedicResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/vedic-context`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    // Graceful fallback: return partial/empty or throw? 
+    // User requested "Show smooth cosmic-themed loading feedback... On failure: Allow manual fallback"
+    // So throwing here is fine, caller will catch.
+    const error = await response.json().catch(() => ({ detail: 'Failed to fetch vedic context' }));
+    throw new Error(error.detail || 'Failed to fetch vedic context');
+  }
+
+  return response.json();
+}
+
+
 export async function translateManifestation(data: TranslationRequest): Promise<TranslationResponse> {
   const response = await fetch(`${API_BASE_URL}/api/v1/translate-manifestation`, {
     method: 'POST',

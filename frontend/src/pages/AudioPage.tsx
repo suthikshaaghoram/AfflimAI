@@ -9,8 +9,9 @@ import { Header } from "@/components/Header";
 import { FloatingElements } from "@/components/FloatingElements";
 import { generateAudio, AudioRequest, getSupportedLanguages, SupportedLanguage, finalizeAudio, FinalizeAudioRequest, getBackgroundTracks, uploadBackgroundTrack, BackgroundTrack } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import { ArrowLeft, Volume2, Globe, Sparkles, Wand2, RotateCcw } from "lucide-react";
+import { ArrowLeft, Volume2, Sparkles, Wand2 } from "lucide-react";
 import { toast } from "sonner";
+import { useManifestationFlow } from "@/context/ManifestationFlowContext";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -37,12 +38,38 @@ export default function AudioPage() {
     const navigate = useNavigate();
     const state = location.state as LocationState;
 
+    // Connect to Context
+    const {
+        manifestation: ctxManifestation,
+        username: ctxUsername,
+        translations: ctxTranslations,
+        translationStatus: ctxStatus,
+        preferences,
+        updatePreferences
+    } = useManifestationFlow();
+
+    // Determine effective data (Prefer location state for immediate transition, fallback to context)
+    const effectiveManifestation = state?.manifestation || ctxManifestation;
+    const effectiveUsername = state?.username || ctxUsername;
+    // For maps/objects, we merge or prefer context if it has more data, but simple fallback works for now
+    // Actually, ctxTranslations is the source of truth for all translations
+    const effectiveTranslations = { ...ctxTranslations, ...state?.translations };
+    const effectiveStatus = { ...ctxStatus, ...state?.translationStatus };
+
     // --- State ---
     const [voiceAudioUrl, setVoiceAudioUrl] = useState<string | null>(null);
-    const [audioFilename, setAudioFilename] = useState<string>(""); // Captured from generation
+    const [audioFilename, setAudioFilename] = useState<string>("");
     const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
-    const [selectedVoice, setSelectedVoice] = useState<"male" | "female" | null>(null);
-    const [selectedAudioLanguage, setSelectedAudioLanguage] = useState<string>("en");
+
+    // Initialize preferences from Context
+    const [selectedVoice, setSelectedVoice] = useState<"male" | "female" | null>(preferences.audioVoice);
+    const [selectedAudioLanguage, setSelectedAudioLanguage] = useState<string>(preferences.audioLanguage);
+
+    // Sync local preference changes to context
+    useEffect(() => {
+        updatePreferences({ audioLanguage: selectedAudioLanguage, audioVoice: selectedVoice });
+    }, [selectedAudioLanguage, selectedVoice]);
+
     const [supportedLanguages, setSupportedLanguages] = useState<Record<string, SupportedLanguage>>({});
     const [voiceStyle, setVoiceStyle] = useState<"calm" | "balanced" | "uplifting">("calm");
 
@@ -61,11 +88,11 @@ export default function AudioPage() {
 
     // Redirect if no manifestation data
     useEffect(() => {
-        if (!state?.manifestation) {
-            toast.error("No manifestation data found");
-            navigate("/");
+        if (!effectiveManifestation) {
+            toast.error("Session expired. Please recreate your manifestation.");
+            navigate("/onboarding/manual");
         }
-    }, [state, navigate]);
+    }, [effectiveManifestation, navigate]);
 
     // Fetch supported languages & Background Tracks
     useEffect(() => {
@@ -97,8 +124,7 @@ export default function AudioPage() {
             return null;
         });
         setAudioFilename("");
-        setSelectedVoice(null);
-        // Reset finalization
+        setSelectedVoice(null); // Reset voice to force re-selection or just clear audio
         setIsFinalized(false);
         if (finalAudioUrl) URL.revokeObjectURL(finalAudioUrl);
         setFinalAudioUrl(null);
@@ -123,14 +149,14 @@ export default function AudioPage() {
         setFinalAudioUrl(null);
 
         try {
-            const textToSpeak = state.translations[selectedAudioLanguage] || state.manifestation;
+            const textToSpeak = effectiveTranslations[selectedAudioLanguage] || effectiveManifestation;
 
             const request: AudioRequest = {
                 text: textToSpeak,
                 gender,
                 language: selectedAudioLanguage,
                 voice_style: voiceStyle,
-                username: state.username
+                username: effectiveUsername || "user"
             };
 
             const response = await generateAudio(request);
@@ -159,7 +185,7 @@ export default function AudioPage() {
                 background_track_id: isBgEnabled ? selectedBgTrackId : "none",
                 bg_volume: isBgEnabled ? bgVolume : 0,
                 voice_volume: voiceVolume,
-                username: state.username || "user"
+                username: effectiveUsername || "user"
             };
 
             const response = await finalizeAudio(request);
@@ -192,11 +218,20 @@ export default function AudioPage() {
         } finally { setIsUploadingBg(false); }
     };
 
+    const handleBackToResult = () => {
+        navigate("/onboarding/manual", {
+            state: {
+                restoreState: true,
+                manifestation: effectiveManifestation
+            }
+        });
+    };
+
     // Get available languages
     const getAvailableLanguages = () => {
         const available: Array<{ code: string; info: SupportedLanguage }> = [];
-        if (state?.translationStatus) {
-            Object.entries(state.translationStatus).forEach(([code, status]) => {
+        if (effectiveStatus) {
+            Object.entries(effectiveStatus).forEach(([code, status]) => {
                 if (code !== "en" && status === "ready" && supportedLanguages[code]) {
                     available.push({ code, info: supportedLanguages[code] });
                 }
@@ -205,7 +240,7 @@ export default function AudioPage() {
         return available;
     };
 
-    if (!state?.manifestation) return null;
+    if (!effectiveManifestation) return null;
 
     const availableLanguages = getAvailableLanguages();
 
@@ -215,6 +250,19 @@ export default function AudioPage() {
             <Header />
 
             <main className="relative container max-w-6xl mx-auto px-4 py-8 md:py-12 z-10">
+
+                {/* Back Button */}
+                <div className="mb-6 animate-fade-up">
+                    <Button
+                        variant="ghost"
+                        onClick={handleBackToResult}
+                        className="text-muted-foreground hover:text-foreground hover:bg-white/20"
+                    >
+                        <ArrowLeft className="w-4 h-4 mr-2" />
+                        Back to Manifestation
+                    </Button>
+                </div>
+
                 {/* Header */}
                 <div className="text-center mb-10 animate-fade-up">
                     <h1 className="font-display text-4xl md:text-5xl font-bold mb-4 text-gradient">

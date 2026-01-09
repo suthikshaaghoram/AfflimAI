@@ -8,36 +8,50 @@ import { ManifestationResult } from "@/components/ManifestationResult";
 import { Loader } from "@/components/Loader";
 import { generateManifestation, ManifestationRequest } from "@/lib/api";
 import { toast } from "sonner";
-import { Sparkles, Star, Heart } from "lucide-react";
+import { Sparkles, Heart } from "lucide-react";
+import { useManifestationFlow } from "@/context/ManifestationFlowContext";
 
 type AppState = "form" | "loading" | "review" | "result";
 
 
 export default function Index() {
   const location = useLocation();
+  const {
+    manifestation,
+    setManifestationData,
+    resetFlow
+  } = useManifestationFlow();
+
   const [appState, setAppState] = useState<AppState>("form");
-  const [manifestation, setManifestation] = useState<string>("");
+  const [internalManifestation, setInternalManifestation] = useState<string>("");
   const [editableManifestation, setEditableManifestation] = useState<string>("");
   const [username, setUsername] = useState<string>("");
   const [generationMode, setGenerationMode] = useState<"quick" | "deep">("deep");
   const [wordCount, setWordCount] = useState<number>(0);
 
-  // Handle navigation back from translation page
+  // Restore State Logic
   useEffect(() => {
+    // 1. Check for explicit restore flag from navigation
+    if (location.state?.restoreState && manifestation) {
+      setInternalManifestation(manifestation);
+      setEditableManifestation(manifestation);
+      setAppState("result");
+      return;
+    }
+
+    // 2. Check for return from translations (legacy/fallback)
     const state = location.state as any;
     if (state?.returnToResult && state?.manifestation) {
       setEditableManifestation(state.manifestation);
-      setManifestation(state.manifestation);
-      if (state.username) {
-        setUsername(state.username);
-      }
+      setInternalManifestation(state.manifestation);
+      if (state.username) setUsername(state.username);
       setAppState("result");
     }
-  }, [location.state]);
+  }, [location.state, manifestation]);
 
   const handleSubmit = async (data: ManifestationRequest) => {
     setAppState("loading");
-    setUsername(data.preferred_name); // Save username for translation
+    setUsername(data.preferred_name);
 
     try {
       const response = await generateManifestation(data);
@@ -45,10 +59,19 @@ export default function Index() {
       const mode = response.data.generation_mode;
       const count = response.data.word_count;
 
-      setManifestation(generatedText);
+      setInternalManifestation(generatedText);
       setEditableManifestation(generatedText);
       setGenerationMode(mode as "quick" | "deep");
       setWordCount(count);
+
+      // Update Context
+      setManifestationData({
+        manifestation: generatedText,
+        username: data.preferred_name,
+        generationMode: mode as "quick" | "deep",
+        wordCount: count
+      });
+
       setAppState("review");
       toast.success(`✨ Your ${mode} manifestation has been created!`);
     } catch (error) {
@@ -62,18 +85,21 @@ export default function Index() {
 
   const handleConfirmManifestation = (editedText: string) => {
     setEditableManifestation(editedText);
+    // Update context with finalized text
+    setManifestationData({ manifestation: editedText });
     setAppState("result");
     toast.success("✨ Manifestation finalized!");
   };
 
   const handleRegenerate = () => {
-    setManifestation("");
+    setInternalManifestation("");
     setEditableManifestation("");
     setAppState("form");
   };
 
   const handleStartNew = () => {
-    setManifestation("");
+    resetFlow();
+    setInternalManifestation("");
     setEditableManifestation("");
     setAppState("form");
   };
@@ -113,7 +139,7 @@ export default function Index() {
         <div className="relative">
           {/* Glow effect behind card */}
           <div className="absolute inset-0 -z-10">
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-gradient-to-r from-sunrise-pink/20 via-sunrise-gold/20 to-sage/20 blur-3xl rounded-full" />
+            <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-gradient-to-r from-sunrise-pink/20 via-sunrise-gold/20 to-sage/20 blur-3xl rounded-full transition-opacity duration-1000 ${appState === 'loading' ? 'opacity-100 animate-pulse' : 'opacity-80'}`} />
           </div>
 
           <div className="gradient-card rounded-3xl shadow-card border border-border/30 p-6 md:p-10 backdrop-blur-sm">
@@ -131,7 +157,7 @@ export default function Index() {
 
             {appState === "review" && (
               <ManifestationReview
-                manifestation={manifestation}
+                manifestation={internalManifestation}
                 onConfirm={handleConfirmManifestation}
                 onRegenerate={handleRegenerate}
               />

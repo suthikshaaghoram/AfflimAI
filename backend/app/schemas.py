@@ -52,3 +52,15 @@ class TranslationResponse(BaseModel):
     language_code: str = Field(..., description="Language code (e.g., 'ta')")
     translated_text: str = Field(..., description="The translated manifestation text")
 
+class VedicRequest(BaseModel):
+    birthDate: str = Field(..., description="YYYY-MM-DD")
+    birthTime: str = Field(..., description="HH:mm")
+    birthPlace: str = Field(..., description="City, Country")
+
+class VedicResponse(BaseModel):
+    nakshatra: str
+    lagna: str
+    rasi: Optional[str] = None
+    status: str
+
+

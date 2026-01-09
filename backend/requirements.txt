@@ -11,5 +11,7 @@ sentence-transformers
 nltk
 pydub
 playwright
-playwright
 playwright-stealth
+gunicorn
+geopy
+timezonefinder

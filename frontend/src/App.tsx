@@ -11,6 +11,8 @@ import StartPage from "./pages/StartPage";
 import LinkedInOnboarding from "./pages/LinkedInOnboarding";
 import ProfileSummary from "./pages/ProfileSummary";
 
+import { ManifestationFlowProvider } from "@/context/ManifestationFlowContext";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -19,17 +21,19 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<StartPage />} />
-          <Route path="/start" element={<StartPage />} />
-          <Route path="/onboarding/linkedin" element={<LinkedInOnboarding />} />
-          <Route path="/profile-summary" element={<ProfileSummary />} />
-          <Route path="/onboarding/manual" element={<Index />} />
-          <Route path="/translate" element={<TranslationPage />} />
-          <Route path="/audio" element={<AudioPage />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <ManifestationFlowProvider>
+          <Routes>
+            <Route path="/" element={<StartPage />} />
+            <Route path="/start" element={<StartPage />} />
+            <Route path="/onboarding/linkedin" element={<LinkedInOnboarding />} />
+            <Route path="/profile-summary" element={<ProfileSummary />} />
+            <Route path="/onboarding/manual" element={<Index />} />
+            <Route path="/translate" element={<TranslationPage />} />
+            <Route path="/audio" element={<AudioPage />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </ManifestationFlowProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

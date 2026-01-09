@@ -22,6 +22,7 @@ interface FormFieldProps {
   className?: string;
   rows?: number;
   options?: string[];
+  disabled?: boolean;
 }
 
 export function FormField({
@@ -36,6 +37,7 @@ export function FormField({
   className,
   rows = 3,
   options,
+  disabled = false,
 }: FormFieldProps) {
   const inputId = `field-${name}`;
 
@@ -55,11 +57,12 @@ export function FormField({
           onChange={(e) => onChange(e.target.value)}
           required={required}
           rows={rows}
-          className="resize-none bg-card/80 border-border/50 focus:border-primary focus:ring-primary/20 transition-all duration-300 rounded-xl placeholder:text-muted-foreground/60 focus:shadow-soft"
+          disabled={disabled}
+          className="resize-none bg-card/80 border-border/50 focus:border-primary focus:ring-primary/20 transition-all duration-300 rounded-xl placeholder:text-muted-foreground/60 focus:shadow-soft disabled:opacity-50 disabled:cursor-not-allowed"
         />
       ) : type === "select" ? (
-        <Select onValueChange={onChange} value={value}>
-          <SelectTrigger className="bg-card/80 border-border/50 focus:ring-primary/20 transition-all duration-300 rounded-xl h-12 shadow-sm">
+        <Select onValueChange={onChange} value={value} disabled={disabled}>
+          <SelectTrigger className="bg-card/80 border-border/50 focus:ring-primary/20 transition-all duration-300 rounded-xl h-12 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
             <SelectValue placeholder={placeholder} />
           </SelectTrigger>
           <SelectContent>
@@ -79,7 +82,8 @@ export function FormField({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           required={required}
-          className="bg-card/80 border-border/50 focus:border-primary focus:ring-primary/20 transition-all duration-300 rounded-xl h-12 placeholder:text-muted-foreground/60 focus:shadow-soft"
+          disabled={disabled}
+          className="bg-card/80 border-border/50 focus:border-primary focus:ring-primary/20 transition-all duration-300 rounded-xl h-12 placeholder:text-muted-foreground/60 focus:shadow-soft disabled:opacity-50 disabled:cursor-not-allowed"
         />
       )}
 

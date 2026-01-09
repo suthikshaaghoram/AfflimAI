@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from .endpoints import manifestation, tts, translation, background_audio, finalize, profile
+from .endpoints import manifestation, tts, translation, background_audio, finalize, profile, vedic
 
 api_router = APIRouter()
 
@@ -9,4 +9,6 @@ api_router.include_router(translation.router, tags=["Translation"])
 api_router.include_router(background_audio.router, tags=["Background Audio"])
 api_router.include_router(finalize.router, tags=["Finalization"])
 api_router.include_router(profile.router, prefix="/profile", tags=["Profile Ingest"])
+api_router.include_router(vedic.router, tags=["Vedic Context"])
+
 

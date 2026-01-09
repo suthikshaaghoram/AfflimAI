@@ -29,9 +29,12 @@ __pycache__/
 *.pyd
 venv/
 venv_clean/
+
 env/
 .env
 .venv
+
+
 
 # Generated Content & Data
 backend/outputs/*

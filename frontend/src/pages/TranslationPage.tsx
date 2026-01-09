@@ -7,36 +7,38 @@ import { translateManifestation, getSupportedLanguages, SupportedLanguage } from
 import { cn } from "@/lib/utils";
 import { ArrowLeft, ArrowRight, Globe, Languages, RefreshCw, Check, Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import { useManifestationFlow } from "@/context/ManifestationFlowContext";
 
 type TranslationStatus = "idle" | "loading" | "ready" | "error";
-
-interface LocationState {
-    manifestation: string;
-    username?: string;
-}
 
 export default function TranslationPage() {
     const location = useLocation();
     const navigate = useNavigate();
-    const state = location.state as LocationState;
+    const state = location.state as { manifestation?: string; username?: string; };
+
+    // Connect to Context
+    const {
+        manifestation: ctxManifestation,
+        username: ctxUsername,
+        translations: ctxTranslations,
+        translationStatus: ctxStatus,
+        updateTranslation,
+        setTranslationStatus: setCtxStatus
+    } = useManifestationFlow();
+
+    // Determine effective data (Prefer location state for immediate transition, fallback to context)
+    const effectiveManifestation = state?.manifestation || ctxManifestation;
+    const effectiveUsername = state?.username || ctxUsername;
 
     const [supportedLanguages, setSupportedLanguages] = useState<Record<string, SupportedLanguage>>({});
-    const [translationStatus, setTranslationStatus] = useState<Record<string, TranslationStatus>>({
-        en: "ready",
-        ta: "idle",
-        hi: "idle"
-    });
-    const [translations, setTranslations] = useState<Record<string, string>>({
-        en: state?.manifestation || ""
-    });
 
-    // Redirect if no manifestation data
+    // Redirect if no data available anywhere
     useEffect(() => {
-        if (!state?.manifestation) {
-            toast.error("No manifestation data found");
-            navigate("/");
+        if (!effectiveManifestation) {
+            toast.error("Session expired. Please recreate your manifestation.");
+            navigate("/onboarding/manual");
         }
-    }, [state, navigate]);
+    }, [effectiveManifestation, navigate]);
 
     // Fetch supported languages
     useEffect(() => {
@@ -52,54 +54,51 @@ export default function TranslationPage() {
     }, []);
 
     const handleTranslate = async (languageCode: string) => {
-        if (!languageCode || !state?.manifestation) return;
+        if (!languageCode || !effectiveManifestation) return;
 
-        if (translationStatus[languageCode] === "loading") {
+        // Check context status first
+        if (ctxStatus[languageCode] === "loading" || ctxStatus[languageCode] === "ready") {
             return;
         }
 
-        if (translationStatus[languageCode] === "ready") {
-            return;
-        }
-
-        setTranslationStatus(prev => ({ ...prev, [languageCode]: "loading" }));
+        setCtxStatus(languageCode, "loading");
 
         try {
             const response = await translateManifestation({
-                text: state.manifestation,
+                text: effectiveManifestation,
                 target_language: languageCode,
-                username: state.username || "anonymous",
+                username: effectiveUsername || "anonymous",
             });
 
-            setTranslations(prev => ({
-                ...prev,
-                [languageCode]: response.translated_text
-            }));
-
-            setTranslationStatus(prev => ({ ...prev, [languageCode]: "ready" }));
-
+            updateTranslation(languageCode, response.translated_text);
             toast.success(`✨ Translated to ${response.language}!`);
         } catch (error) {
             console.error("Error translating:", error);
             toast.error(error instanceof Error ? error.message : "Failed to translate");
-            setTranslationStatus(prev => ({ ...prev, [languageCode]: "error" }));
+            setCtxStatus(languageCode, "error");
         }
     };
 
     const handleProceedToAudio = () => {
         navigate("/audio", {
             state: {
-                manifestation: state.manifestation,
-                username: state.username,
-                translations,
-                translationStatus
+                manifestation: effectiveManifestation,
+                username: effectiveUsername
             }
         });
     };
 
-    if (!state?.manifestation) {
-        return null;
-    }
+    const handleBackToResult = () => {
+        // Restore manual onboarding to Result state
+        navigate("/onboarding/manual", {
+            state: {
+                restoreState: true,
+                manifestation: effectiveManifestation
+            }
+        });
+    };
+
+    if (!effectiveManifestation) return null;
 
     return (
         <div className="min-h-screen gradient-hero relative overflow-hidden">
@@ -134,7 +133,7 @@ export default function TranslationPage() {
                             </h3>
                             <div className="prose prose-lg max-w-none">
                                 <p className="font-body text-foreground/90 leading-relaxed whitespace-pre-wrap text-balance text-lg">
-                                    {state.manifestation}
+                                    {effectiveManifestation}
                                 </p>
                             </div>
                         </div>
@@ -166,7 +165,7 @@ export default function TranslationPage() {
                                     </p>
                                     <div className="flex flex-wrap gap-4">
                                         {Object.entries(supportedLanguages).map(([code, info]) => {
-                                            const status = translationStatus[code];
+                                            const status = ctxStatus[code] || "idle";
                                             const isLoading = status === "loading";
                                             const isReady = status === "ready";
 
@@ -199,8 +198,8 @@ export default function TranslationPage() {
 
                                     {/* Translated Text Display */}
                                     {Object.entries(supportedLanguages).map(([code, info]) => {
-                                        const isReady = translationStatus[code] === "ready";
-                                        const translatedText = translations[code];
+                                        const isReady = ctxStatus[code] === "ready";
+                                        const translatedText = ctxTranslations[code];
 
                                         if (!isReady || !translatedText) return null;
 
@@ -230,7 +229,7 @@ export default function TranslationPage() {
                         <Button
                             variant="outline"
                             size="lg"
-                            onClick={() => navigate("/", { state: { returnToResult: true, manifestation: state.manifestation, username: state.username } })}
+                            onClick={handleBackToResult}
                             className="flex-1 rounded-xl border-2 hover:scale-105 transition-all"
                         >
                             <ArrowLeft className="w-5 h-5 mr-2" />
