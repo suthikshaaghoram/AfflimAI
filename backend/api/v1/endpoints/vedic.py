@@ -5,6 +5,7 @@ import os
 from typing import Optional
 from app.schemas import VedicRequest, VedicResponse
 import logging
+import re
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -14,15 +15,61 @@ ASTRO_API_BASE_URL = os.getenv("ASTRO_API_BASE_URL")
 ASTRO_API_USER_ID = os.getenv("ASTRO_API_USER_ID")
 ASTRO_API_KEY = os.getenv("ASTRO_API_KEY")
 
+def format_nakshatra(name: str) -> str:
+    """
+    Formats API Nakshatra names to standard spaced format.
+    e.g., "PurvaBhadra" -> "Purva Bhadrapada"
+    """
+    if not name or name == "Unknown":
+        return name
+        
+    # Mapping for known API deviations
+    mapping = {
+        "Ashvini": "Ashwini",
+        "Arudra": "Ardra",
+        "Punardvasu": "Punarvasu",
+        "Pushyami": "Pushya",
+        "Aslesha": "Ashlesha",
+        "Magha": "Magha", # Same
+        "PurvaPhalguni": "Purva Phalguni",
+        "UttaraPhalguni": "Uttara Phalguni",
+        "Hastha": "Hasta",
+        "Chitta": "Chitra",
+        "Svati": "Swati",
+        "Visakha": "Vishakha",
+        "Jyeshta": "Jyeshtha",
+        "Moola": "Mula",
+        "PurvaShadha": "Purva Ashadha",
+        "UttaraShadha": "Uttara Ashadha",
+        "Sravana": "Shravana",
+        "Dhanista": "Dhanishta",
+        "Satabhisha": "Shatabhisha",
+        "PurvaBhadra": "Purva Bhadrapada",
+        "UttaraBhadra": "Uttara Bhadrapada",
+        "Revathi": "Revati"
+    }
+    
+    # Check exact match first
+    if name in mapping:
+        return mapping[name]
+        
+    # Check if key is contained (e.g. "PurvaShadha" vs "Purva Ashadha")
+    for key, val in mapping.items():
+        if key.lower() == name.lower():
+            return val
+            
+    # Fallback: Insert space before capital letters if missing
+    # e.g. "PurvaBhadrapada" -> "Purva Bhadrapada" (if not in map)
+    spaced = re.sub(r'(?<!^)(?=[A-Z])', ' ', name)
+    return spaced
+
 @router.post("/vedic-context", response_model=VedicResponse)
 async def get_vedic_context(data: VedicRequest):
     """
     Get Nakshatra and Lagna (Ascendant) details from AstroAPI.
     """
-    # --- MOCK IMPLEMENTATION FOR DEMO/TESTING ---
-    # If credentials are missing or API fails, we return a deterministic mock based on input
-    # This ensures the "Happy Path" works for the user even without valid keys.
-
+    
+    # Check if credentials exist
     if not ASTRO_API_BASE_URL or not ASTRO_API_KEY:
         logger.warning("AstroAPI credentials missing, using MOCK data")
         return get_mock_vedic_response(data)
@@ -33,24 +80,17 @@ async def get_vedic_context(data: VedicRequest):
         time_parts = data.birthTime.split(":")
         
         if len(date_parts) != 3 or len(time_parts) != 2:
-             # Should be caught by schema validation but good double check
              return get_mock_vedic_response(data)
 
         year, month, day = int(date_parts[0]), int(date_parts[1]), int(date_parts[2])
         hour, minute = int(time_parts[0]), int(time_parts[1])
 
         # VedicAstroAPI.com v3 Implementation
-        # Base URL: https://api.vedicastroapi.com/v3-json
-        
-        # Format Date as DD/MM/YYYY for this API
         formatted_date = f"{day:02d}/{month:02d}/{year}"
         
-        # Endpoint: /horoscope/planet-details is reliable for Ascendant & Nakshatra
-        # Or /prediction/birth-details
-        # Let's use 'planet-details' which gives Lagna (Ascendant) + Moon (Nakshatra)
+        # Geocoding & Timezone Lookup without Silent Default
+        lat, lon, tz = None, None, None
         
-        # Geocoding & Timezone Lookup
-        lat, lon, tz = 13.0827, 80.2707, 5.5 # Default fallback
         try:
             from geopy.geocoders import Nominatim
             from timezonefinder import TimezoneFinder
@@ -65,33 +105,43 @@ async def get_vedic_context(data: VedicRequest):
                 
                 tf = TimezoneFinder()
                 tz_str = tf.timezone_at(lng=lon, lat=lat)
+                
                 if tz_str:
-                    # Calculate UTC offset for the given date/time
-                    # Use the specific birth date/time to account for DST (Daylight Savings) correctly
                     local_tz = pytz.timezone(tz_str)
                     naive_birth_dt = datetime(year, month, day, hour, minute)
                     
-                    # Localize the naive datetime to the found timezone
-                    # is_dst=None raises error for ambiguous times, False/True forces standard/DST. 
-                    # We usually let pytz decide or use safe fallback. Mismatches in DST are rare logic unless near transition.
                     try:
                         localized_dt = local_tz.localize(naive_birth_dt)
                         offset = localized_dt.utcoffset()
                         if offset:
-                            # Convert total seconds to hours (e.g. 19800 -> 5.5)
                             tz = offset.total_seconds() / 3600.0
                             logger.info(f"Timezone Resolved: {tz_str} for {naive_birth_dt} -> Offset: {tz}")
                     except Exception as tz_err:
+                        # Fallback for TZ only if location was found but TZ failed (rare)
+                        # We might default to UTC or 0, but usually safe to err.
                         logger.warning(f"Timezone localization failed: {tz_err}")
-                        
+                
+                if tz is None:
+                    # If we have lat/lon but no TZ, that's tricky. 
+                    # Defaulting to 0.0 might be better than random, or 5.5.
+                    # But let's try 0.0 or raise error? 
+                    # Most APIs expect valid TZ. Let's default to 0.0 if TZ lookup fails but Geocode worked
+                    tz = 0.0 
+                    
                 logger.info(f"Resolved Location: {data.birthPlace} -> {lat}, {lon} (TZ: {tz})")
+            else:
+                logger.warning(f"Geocoding returned None for: {data.birthPlace}")
+                
         except Exception as geo_e:
-            logger.warning(f"Geocoding failed for {data.birthPlace}, using default: {geo_e}")
+            logger.error(f"Geocoding error for {data.birthPlace}: {geo_e}")
+
+        # --- CRITICAL CHANGE: If Geocoding failed, do NOT proceed with default Chennai coordinates ---
+        if lat is None or lon is None:
+             raise HTTPException(status_code=400, detail=f"Could not find location: {data.birthPlace}. Please check spelling.")
 
         
         api_url = f"{ASTRO_API_BASE_URL}/horoscope/planet-details"
         
-        # VedicAstroAPI v3 Params
         params = {
             "api_key": ASTRO_API_KEY,
             "dob": formatted_date,
@@ -104,58 +154,39 @@ async def get_vedic_context(data: VedicRequest):
         
         async with httpx.AsyncClient() as client:
             try:
-                # VedicAstroAPI v3 often uses GET
                 response = await client.get(api_url, params=params, timeout=10.0)
-                logger.info(f"Vedic API Status: {response.status_code}")
-                logger.info(f"Vedic API Response: {response.text}")
                 
                 if response.status_code == 200:
                     res_data = response.json()
                     response_obj = res_data.get("response", {})
                     
-                    # Extract Ascendant (Lagna) - usually distinct or in planets list (id 0 or 'Ascendant')
-                    # And Moon (id 1) has Nakshatra
-                    # The structure for planet-details: { "0": { "name": "Ascendant", "nakshatra": "...", ... }, "1": { "name": "Moon", ... } }
-                    # OR array.
-                    
-                    # Let's try to handle their format robustly.
-                    # If it differs, we catch exception and fall back to Mock.
-                    
                     if isinstance(response_obj, str):
-                         # API returned an error string or weird format
-                         logger.warning(f"Vedic API returned string response: {response_obj}")
-                         # If it's a JSON string, try to parse it
                          try:
                              import json
                              response_obj = json.loads(response_obj)
                          except:
                              return get_mock_vedic_response(data)
 
-                    # Heuristic parsing:
-                    # The API returns a dict with keys "0", "1", etc. for planets.
-                    # We convert values() to a list to iterate.
                     planet_list = list(response_obj.values()) if isinstance(response_obj, dict) else response_obj
-
                     
                     my_nakshatra = "Unknown"
                     my_lagna = "Unknown"
-                    
                     my_rasi = "Unknown"
+                    
                     for planet in planet_list:
                         if not isinstance(planet, dict):
                             continue
                             
                         p_name = planet.get("full_name") or planet.get("name")
                         if p_name == "Ascendant" or p_name == "Lagna":
-                            my_lagna = planet.get("zodiac") or planet.get("sign") # "Aries"
-                        if p_name == "Moon":
+                            my_lagna = planet.get("zodiac") or planet.get("sign") 
+                        if p_name == "Moon" or p_name == "Mo": # API sometimes uses 'Mo'
                             my_nakshatra = planet.get("nakshatra")
                             my_rasi = planet.get("zodiac")
                             
-                    # If simple endpoint failed, try fallback logical or stick to Unknown so user can set manually
-                    if my_lagna == "Unknown" and my_nakshatra == "Unknown":
-                         # Maybe structure is different
-                         pass
+                    # Format Nakshatra
+                    if my_nakshatra and my_nakshatra != "Unknown":
+                        my_nakshatra = format_nakshatra(my_nakshatra)
 
                     return VedicResponse(
                         nakshatra=my_nakshatra if my_nakshatra != "Unknown" else "Click to select",
@@ -163,19 +194,25 @@ async def get_vedic_context(data: VedicRequest):
                         rasi=my_rasi if my_rasi != "Unknown" else "Click to select",
                         status="success"
                     )
+                else:
+                    logger.error(f"Vedic API Error {response.status_code}: {response.text}")
+                    # If API fails (e.g. Rate Limit), maybe then fallback to Mock?
+                    # Or tell user "Service Busy"? 
+                    # Let's fallback to Mock for robustness but log it.
+                    pass
+                    
             except Exception as api_err:
                 logger.error(f"API Call Failed: {api_err}")
-                pass
-            except Exception as api_err:
-                logger.error(f"API Call Failed: {api_err}")
-                # Fallback to Mock
                 pass
 
+    except HTTPException as he:
+        # Re-raise HTTP exceptions (like bad location)
+        raise he
     except Exception as e:
         logger.error(f"Vedic Context Logic Error: {str(e)}")
-        # Fallback to Mock
         pass
 
+    # Fallback to Mock if anything (except known HTTP errors) failed
     return get_mock_vedic_response(data)
 
 
