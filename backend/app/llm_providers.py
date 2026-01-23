@@ -44,7 +44,7 @@ class NovitaProvider(LLMProvider):
         }
         
         try:
-            response = requests.post(api_url, headers=headers, json=payload, timeout=60)
+            response = requests.post(api_url, headers=headers, json=payload, timeout=30)
             
             if response.status_code == 200:
                 result = response.json()
@@ -209,7 +209,7 @@ class DeepSeekProvider(LLMProvider):
         }
         
         try:
-            response = requests.post(api_url, headers=headers, json=payload, timeout=60)
+            response = requests.post(api_url, headers=headers, json=payload, timeout=30)
             
             if response.status_code == 200:
                 result = response.json()

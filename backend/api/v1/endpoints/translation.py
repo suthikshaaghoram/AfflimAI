@@ -10,7 +10,7 @@ import logging
 import os
 from datetime import datetime
 
-router = APIRouter()
+router = APIRouter(prefix="/v1")
 logger = logging.getLogger(__name__)
 
 @router.post(

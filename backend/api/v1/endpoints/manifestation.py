@@ -6,7 +6,7 @@ from app.text_validator import validate_mode, enforce_word_limit
 import logging
 
 # Initialize router specific to this endpoint
-router = APIRouter()
+router = APIRouter(prefix="/v1")
 logger = logging.getLogger(__name__)
 
 @router.post(

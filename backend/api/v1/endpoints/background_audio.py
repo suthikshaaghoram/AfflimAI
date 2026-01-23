@@ -6,7 +6,7 @@ import os
 from typing import List, Optional
 from pydantic import BaseModel
 
-router = APIRouter()
+router = APIRouter(prefix="/v1")
 
 # Define base path for background audio
 # Assuming this file is at backend/api/v1/endpoints/background_audio.py
@@ -80,7 +80,7 @@ async def upload_background_track(file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail="Only .mp3 and .wav files are allowed")
         
     # Validate file size (e.g., max 10MB)
-    MAX_SIZE = 10 * 1024 * 1024
+    MAX_SIZE = 50 * 1024 * 1024
     # Note: Checking size before read is tricky with UploadFile without reading, 
     # but we can check after saving or read in chunks. 
     # For now, let's just save and check size.
@@ -100,7 +100,7 @@ async def upload_background_track(file: UploadFile = File(...)):
         # Check size
         if file_path.stat().st_size > MAX_SIZE:
             os.remove(file_path)
-            raise HTTPException(status_code=400, detail="File too large (max 10MB)")
+            raise HTTPException(status_code=400, detail="File too large (max 50MB)")
             
         return BackgroundTrack(
             id=file_path.stem,

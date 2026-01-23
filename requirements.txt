@@ -1,18 +1,37 @@
+pypdf
+beautifulsoup4
+
+# Core API
 fastapi
 uvicorn
+gunicorn
+
+# Config & Validation
 python-dotenv
 pydantic
 pydantic-settings
+
+# HTTP & Async
 requests
-edge-tts
 aiofiles
-chromadb
+python-multipart
+
+# NLP / Embeddings (CPU SAFE)
 sentence-transformers
 nltk
+
+# Vector DB
+chromadb
+
+# Audio / TTS
+edge-tts
 pydub
+
+# Browser automation
 playwright
 playwright-stealth
-gunicorn
+
+# Geo
 geopy
 timezonefinder
-python-multipart
+

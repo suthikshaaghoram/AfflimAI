@@ -6,20 +6,43 @@ from pydub import AudioSegment
 import logging
 from datetime import datetime
 import os
+import shutil
+import platform
 
-router = APIRouter()
+router = APIRouter(prefix="/v1")
 logger = logging.getLogger(__name__)
 
 # Explicitly set ffmpeg path (Homebrew location)
-AudioSegment.converter = "/opt/homebrew/bin/ffmpeg"
-AudioSegment.ffprobe = "/opt/homebrew/bin/ffprobe"
+# Explicitly set ffmpeg path (Homebrew location)
+
+from pydub import AudioSegment
+import shutil
+
+ffmpeg_path = shutil.which("ffmpeg")
+ffprobe_path = shutil.which("ffprobe")
+
+if not ffmpeg_path or not ffprobe_path:
+    raise RuntimeError("ffmpeg/ffprobe not found in PATH")
+
+AudioSegment.converter = ffmpeg_path
+AudioSegment.ffprobe = ffprobe_path
+
+
 
 # Paths - Assuming similar structure to other endpoints
 # Paths - Absolute paths to avoid CWD issues
-BASE_DIR = Path(__file__).resolve().parent.parent.parent.parent
+BASE_DIR = Path("/home/ubuntu/AfflimAI/backend")
+
 BASE_ASSETS_DIR = BASE_DIR / "assets" / "background_audio"
 TEMP_AUDIO_DIR = BASE_DIR / "temp_audio"
 OUTPUTS_DIR = BASE_DIR / "outputs"
+
+logger.error(f"FINALIZE BASE_DIR = {BASE_DIR}")
+logger.error(f"OUTPUTS_DIR = {OUTPUTS_DIR}")
+logger.error(f"TEMP_AUDIO_DIR = {TEMP_AUDIO_DIR}")
+
+
+
 
 # Ensure directories exist
 TEMP_AUDIO_DIR.mkdir(exist_ok=True)

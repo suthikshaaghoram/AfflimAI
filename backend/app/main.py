@@ -15,13 +15,17 @@ logging.basicConfig(
 )
 
 # Initialize FastAPI App
+
 app = FastAPI(
     title="AffirmAI API",
     description="AI-powered affirmation and manifestation platform backend.",
     version="1.0.0",
+    root_path="/api",
     docs_url="/docs",
-    redoc_url="/redoc"
+    redoc_url="/redoc",
+    openapi_url="/openapi.json"
 )
+
 
 # CORS (Optional but recommended for frontend integration)
 origins = os.getenv("ALLOWED_ORIGINS", "*").split(",")
@@ -34,7 +38,7 @@ app.add_middleware(
 )
 
 # Include Router (Prefixing with /api/v1 for clearer structure)
-app.include_router(api_router, prefix="/api/v1")
+app.include_router(api_router)
 
 @app.get("/", tags=["Health"])
 async def root():

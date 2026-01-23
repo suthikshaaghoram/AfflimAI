@@ -64,3 +64,20 @@ backend/test_request.json
 # OS Files
 Thumbs.db
 .DS_Store
+# Python
+venv/
+__pycache__/
+
+# Audio outputs
+backend/outputs/
+backend/temp_audio/
+outputs/
+*.mp3
+*.wav
+
+# Node
+node_modules/
+dist/
+
+# OS
+.DS_Store

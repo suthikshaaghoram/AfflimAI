@@ -7,7 +7,7 @@ from app.schemas import VedicRequest, VedicResponse
 import logging
 import re
 
-router = APIRouter()
+router = APIRouter(prefix="/v1")
 logger = logging.getLogger(__name__)
 
 # Environment Variables

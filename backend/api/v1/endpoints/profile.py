@@ -4,7 +4,7 @@ from app.profile_ingest.linkedin_parser import parse_linkedin_pdf, clean_profile
 from app.profile_ingest.profile_summarizer import summarize_profile
 import logging
 
-router = APIRouter()
+router = APIRouter(prefix="/v1")
 logger = logging.getLogger(__name__)
 
 from app.profile_ingest.url_parser import fetch_url_content
